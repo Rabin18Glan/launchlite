@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ platform_name }} · Cloud Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Geist', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+                    },
+                    colors: {
+                        vercel: {
+                            bg: '#000000',
+                            card: '#0a0a0a',
+                            subtle: '#121212',
+                            border: '#27272a',
+                            borderMuted: '#1e1e20',
+                            textMuted: '#71717a',
+                            textSecondary: '#a1a1aa',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Geist Font CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000000;
+            color: #ededed;
+            font-family: 'Geist', -apple-system, sans-serif;
+        }
+        /* Custom scrollbar for sleek logs */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-zinc-800/80 bg-black/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <!-- Vercel-style Brand Mark -->
+                <a href="/" class="flex items-center gap-2.5 text-white hover:opacity-90 transition">
+                    <svg class="w-5 h-5 fill-white" viewBox="0 0 76 65" fill="none">
+                        <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+                    </svg>
+                    <span class="font-bold tracking-tight text-base">{{ platform_name }}</span>
+                    <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">PaaS</span>
+                </a>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+                    <a href="/" class="text-white border-b-2 border-white px-3 py-4 text-xs font-medium">Overview</a>
+                    <a href="/api/system/caddyfile" target="_blank" class="text-zinc-400 hover:text-white px-3 py-4 text-xs font-medium transition flex items-center gap-1">
+                        Caddyfile
+                        <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                    <a href="/api/apps" target="_blank" class="text-zinc-400 hover:text-white px-3 py-4 text-xs font-medium transition">REST API</a>
+                </nav>
+            </div>
+
+            <!-- Header Actions & GitHub Profile -->
+            <div class="flex items-center gap-3">
+                {% if current_user %}
+                <div class="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-full pl-1.5 pr-3 py-1">
+                    <img src="{{ current_user.avatar_url }}" alt="{{ current_user.login }}" class="w-5 h-5 rounded-full border border-zinc-700" />
+                    <span class="text-xs font-medium text-zinc-300">{{ current_user.login }}</span>
+                    <a href="/auth/logout" title="Sign out" class="text-zinc-500 hover:text-zinc-300 text-xs ml-1 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </a>
+                </div>
+                <button onclick="openGithubModal()" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+                    Import Repo
+                </button>
+                {% else %}
+                <button onclick="openPatModal()" class="inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                    Connect GitHub
+                </button>
+                {% endif %}
+
+                <!-- Primary Deploy Button (Vercel Solid White) -->
+                <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-white text-black hover:bg-zinc-200 px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-tight transition duration-150 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    New Project
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+
+        <!-- Telemetry Strip (Vercel-style minimal vitals) -->
+        <section class="border border-zinc-800/80 bg-zinc-950/60 rounded-xl p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform RAM (RSS)</div>
+                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ platform_ram_mb }} <span class="text-xs font-normal text-zinc-500">MB</span></div>
+                <div class="text-[11px] text-zinc-500 mt-0.5">Idle footprint</div>
+            </div>
+            <div>
+                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Binary Size</div>
+                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ binary_size_mb }} <span class="text-xs font-normal text-zinc-500">MB</span></div>
+                <div class="text-[11px] text-zinc-500 mt-0.5">Single binary</div>
+            </div>
+            <div>
+                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Running Apps</div>
+                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ running_apps }} <span class="text-xs font-normal text-zinc-500">/ {{ total_apps }}</span></div>
+                <div class="text-[11px] text-zinc-500 mt-0.5">Linux processes</div>
+            </div>
+            <div>
+                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform Uptime</div>
+                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ uptime_formatted }}</div>
+                <div class="text-[11px] text-zinc-500 mt-0.5">Embedded SQLite</div>
+            </div>
+        </section>
+
+        <!-- Projects Header & Live Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+            <div>
+                <h1 class="text-lg font-semibold text-white tracking-tight">Projects</h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Hosted applications with automated builds, monitoring, and domains.</p>
+            </div>
+            <div class="relative w-full sm:w-64">
+                <input 
+                    type="text" 
+                    id="projectSearch" 
+                    placeholder="Search projects..." 
+                    oninput="filterProjectCards()"
+                    class="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-lg pl-8 pr-3 py-1.5 focus:border-zinc-500 focus:outline-none transition placeholder:text-zinc-600"
+                />
+                <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Projects List (Clean Vercel Card Style) -->
+        {% if apps %}
+        <div class="grid grid-cols-1 gap-3.5" id="projectsContainer">
+            {% for app in apps %}
+            <div class="project-card border border-zinc-800/80 bg-zinc-950/70 hover:border-zinc-700 hover:bg-zinc-900/30 rounded-xl p-5 transition duration-150" data-name="{{ app.name | lower }}" data-domain="{{ app.domain | default('') | lower }}">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    
+                    <!-- App Info -->
+                    <div class="space-y-1.5 flex-1 min-w-0">
+                        <div class="flex items-center gap-2.5 flex-wrap">
+                            <span class="text-base font-semibold text-white tracking-tight truncate">{{ app.name }}</span>
+                            <span class="text-[11px] font-mono text-zinc-500 bg-zinc-900/80 border border-zinc-800/80 px-2 py-0.5 rounded">{{ app.id }}</span>
+                            
+                            <!-- Custom Domain Pill (Vercel-style domain link) -->
+                            {% if app.domain %}
+                            <a href="http://{{ app.domain }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-mono text-blue-400 hover:text-blue-300 bg-blue-950/30 border border-blue-900/40 px-2.5 py-0.5 rounded-full transition">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                {{ app.domain }}
+                                <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Secondary Meta: Git or Command + Health -->
+                        <div class="flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
+                            {% if app.has_git %}
+                            <div class="inline-flex items-center gap-1.5 text-zinc-300">
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+                                <span>branch: <strong class="text-zinc-200 font-medium">{{ app.git_branch | default('main') }}</strong></span>
+                                {% if app.git_commit_short %}
+                                <span class="text-zinc-500 font-mono">@ {{ app.git_commit_short }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-zinc-600">•</span>
+                            {% endif %}
+
+                            <code class="text-zinc-400 font-mono text-[11px] bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800/60 max-w-xs truncate" title="{{ app.command }}">{{ app.command }}</code>
+
+                            {% if app.port %}
+                            <span class="text-zinc-600">•</span>
+                            <span class="text-zinc-400 font-mono text-[11px]">port {{ app.port }}</span>
+                            {% endif %}
+
+                            {% if app.ram_mb %}
+                            <span class="text-zinc-600">•</span>
+                            <span class="text-zinc-300 font-mono text-[11px]">{{ app.ram_mb }} MB</span>
+                            {% endif %}
+
+                            {% if app.uptime_formatted %}
+                            <span class="text-zinc-600">•</span>
+                            <span class="text-zinc-400 text-[11px]">up {{ app.uptime_formatted }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Status Indicator & Actions -->
+                    <div class="flex items-center gap-3 self-end md:self-center">
+                        
+                        <!-- Status Pill with Pulsating Indicator -->
+                        {% if app.is_building %}
+                        <div class="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-950/30 border border-amber-900/40 px-2.5 py-1 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                            <span>Building</span>
+                        </div>
+                        {% elif app.is_running %}
+                        <div class="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 px-2.5 py-1 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span>Running</span>
+                        </div>
+                        {% elif app.status == "crashed" %}
+                        <div class="flex items-center gap-1.5 text-xs text-rose-400 bg-rose-950/30 border border-rose-900/40 px-2.5 py-1 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                            <span>Crashed</span>
+                        </div>
+                        {% else %}
+                        <div class="flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                            <span>Stopped</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Actions Buttons -->
+                        <div class="flex items-center gap-1.5">
+                            {% if app.has_git %}
+                            <button onclick="redeployApp('{{ app.id }}')" title="Rebuild & deploy latest commit" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                Redeploy
+                            </button>
+                            {% endif %}
+
+                            {% if app.is_running %}
+                            <button onclick="appAction('{{ app.id }}', 'restart')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                Restart
+                            </button>
+                            <button onclick="appAction('{{ app.id }}', 'stop')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                Stop
+                            </button>
+                            {% else %}
+                            <button onclick="appAction('{{ app.id }}', 'start')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-emerald-400 border border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                Start
+                            </button>
+                            {% endif %}
+
+                            <button onclick="viewLogs('{{ app.id }}', '{{ app.name }}')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                Logs
+                            </button>
+
+                            <button onclick="deleteApp('{{ app.id }}')" title="Delete application" class="text-xs text-zinc-600 hover:text-rose-400 p-1.5 rounded-md hover:bg-rose-950/20 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State (Clean Minimalist Box) -->
+        <div class="border border-dashed border-zinc-800 rounded-xl p-12 text-center bg-zinc-950/30">
+            <svg class="w-10 h-10 text-zinc-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3 class="text-sm font-semibold text-white">No projects yet</h3>
+            <p class="text-xs text-zinc-500 max-w-sm mx-auto mt-1 mb-4">Deploy an existing Git repository or execute any binary on the host with automatic routing.</p>
+            <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-white text-black hover:bg-zinc-200 px-4 py-2 rounded-md text-xs font-semibold transition">
+                + Deploy Your First Project
+            </button>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <!-- Deploy Modal (Vercel Style) -->
+    <div id="deployModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
+                <h3 class="text-sm font-semibold text-white tracking-tight">Deploy New Project</h3>
+                <button onclick="closeDeployModal()" class="text-zinc-500 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="flex border-b border-zinc-800 mb-5">
+                <button type="button" id="tabGit" onclick="switchDeployTab('git')" class="text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white">GitHub / Git Repo</button>
+                <button type="button" id="tabExec" onclick="switchDeployTab('exec')" class="text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white">Custom Executable</button>
+            </div>
+
+            <form id="deployForm" onsubmit="handleDeploy(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Project Name *</label>
+                        <input type="text" id="appName" required placeholder="my-app" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Custom Domain (Optional)</label>
+                        <input type="text" id="appDomain" placeholder="api.example.com" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                    </div>
+                </div>
+
+                <!-- Git Fields -->
+                <div id="gitSection" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Repository URL *</label>
+                        <input type="text" id="gitRepo" placeholder="https://github.com/user/repo.git" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-400 mb-1">Branch</label>
+                            <input type="text" id="gitBranch" value="main" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-400 mb-1">Restart Policy</label>
+                            <select id="restartPolicy" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition">
+                                <option value="on_failure">On Failure</option>
+                                <option value="always">Always</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executable Fields (hidden by default) -->
+                <div id="execSection" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Executable Command *</label>
+                        <input type="text" id="appExec" placeholder="./target/release/server or node index.js" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Arguments</label>
+                        <input type="text" id="appArgs" placeholder="-p 8080" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-zinc-800/80">
+                    <button type="button" onclick="closeDeployModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 rounded-md transition">Cancel</button>
+                    <button type="submit" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition">Deploy Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GitHub Repos Modal -->
+    <div id="githubModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-xl w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
+                <h3 class="text-sm font-semibold text-white tracking-tight">Select a Repository</h3>
+                <button onclick="closeGithubModal()" class="text-zinc-500 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <input 
+                type="text" 
+                id="repoSearch" 
+                placeholder="Search repositories..." 
+                oninput="filterRepoList()"
+                class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 mb-3 focus:border-zinc-500 focus:outline-none transition"
+            />
+            <div id="repoList" class="max-h-80 overflow-y-auto space-y-2 pr-1 text-xs text-zinc-400">
+                Loading repositories...
+            </div>
+        </div>
+    </div>
+
+    <!-- PAT Modal -->
+    <div id="patModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
+                <h3 class="text-sm font-semibold text-white tracking-tight">Connect with GitHub</h3>
+                <button onclick="closePatModal()" class="text-zinc-500 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Paste a GitHub Personal Access Token (PAT) with <code class="text-zinc-300">repo</code> & <code class="text-zinc-300">read:user</code> scopes to browse and deploy repositories directly.</p>
+            <form onsubmit="submitPat(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1">Personal Access Token</label>
+                    <input type="password" id="patInput" required placeholder="ghp_..." class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition font-mono" />
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePatModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
+                    <button type="submit" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition">Connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Terminal Log Console Modal (Vercel Style) -->
+    <div id="logsModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-black border border-zinc-800 rounded-xl max-w-3xl w-full p-5 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800/80">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h3 id="logsTitle" class="text-xs font-mono font-medium text-white tracking-tight">Deployment Console</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyLogs()" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 transition">Copy Logs</button>
+                    <button onclick="refreshCurrentLogs()" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 transition">Refresh</button>
+                    <button onclick="closeLogsModal()" class="text-zinc-500 hover:text-white transition p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Monospace Terminal Screen -->
+            <div id="logContent" class="flex-1 overflow-y-auto bg-black font-mono text-xs text-zinc-300 p-3 rounded-lg border border-zinc-900 leading-relaxed whitespace-pre-wrap break-all min-h-[300px]">
+                Loading output...
+            </div>
+            <div class="pt-2 text-[11px] text-zinc-600 font-mono flex justify-between">
+                <span>Streaming live logs & exit status</span>
+                <span>Press Esc to close</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLogAppId = null;
+        let allRepos = [];
+        let activeDeployTab = 'git';
+
+        function openDeployModal() { document.getElementById('deployModal').classList.remove('hidden'); }
+        function closeDeployModal() { document.getElementById('deployModal').classList.add('hidden'); }
+        function openPatModal() { document.getElementById('patModal').classList.remove('hidden'); }
+        function closePatModal() { document.getElementById('patModal').classList.add('hidden'); }
+        function closeGithubModal() { document.getElementById('githubModal').classList.add('hidden'); }
+        function closeLogsModal() { document.getElementById('logsModal').classList.add('hidden'); currentLogAppId = null; }
+
+        function switchDeployTab(tab) {
+            activeDeployTab = tab;
+            const tabGit = document.getElementById('tabGit');
+            const tabExec = document.getElementById('tabExec');
+            const gitSection = document.getElementById('gitSection');
+            const execSection = document.getElementById('execSection');
+
+            if (tab === 'git') {
+                tabGit.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white";
+                tabExec.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white";
+                gitSection.classList.remove('hidden');
+                execSection.classList.add('hidden');
+            } else {
+                tabExec.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white";
+                tabGit.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white";
+                execSection.classList.remove('hidden');
+                gitSection.classList.add('hidden');
+            }
+        }
+
+        async function submitPat(e) {
+            e.preventDefault();
+            const token = document.getElementById('patInput').value.trim();
+            if (!token) return;
+            try {
+                const res = await fetch('/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                if (!res.ok) {
+                    alert('Token validation failed: ' + await res.text());
+                    return;
+                }
+                closePatModal();
+                location.reload();
+            } catch (err) {
+                alert('Error: ' + err);
+            }
+        }
+
+        async function openGithubModal() {
+            document.getElementById('githubModal').classList.remove('hidden');
+            const listDiv = document.getElementById('repoList');
+            listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">Loading your GitHub repositories...</div>';
+            try {
+                const res = await fetch('/auth/repos');
+                if (!res.ok) {
+                    listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">Failed to load repositories. Please reconnect GitHub.</div>';
+                    return;
+                }
+                allRepos = await res.json();
+                renderRepoList(allRepos);
+            } catch (err) {
+                listDiv.innerHTML = '<div class="py-8 text-center text-rose-500">Error: ' + err + '</div>';
+            }
+        }
+
+        function renderRepoList(repos) {
+            const listDiv = document.getElementById('repoList');
+            if (!repos || repos.length === 0) {
+                listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">No repositories found.</div>';
+                return;
+            }
+            listDiv.innerHTML = repos.map(r => `
+                <div class="border border-zinc-800/80 bg-zinc-950 p-3 rounded-lg hover:border-zinc-700 flex items-center justify-between transition">
+                    <div>
+                        <div class="font-medium text-white text-xs flex items-center gap-2">
+                            ${escapeHtml(r.full_name)}
+                            ${r.private ? '<span class="text-[10px] text-amber-400 bg-amber-950/40 border border-amber-900/50 px-1.5 rounded">Private</span>' : ''}
+                        </div>
+                        <div class="text-[11px] text-zinc-500 mt-0.5">${r.language || 'Code'} • branch: ${r.default_branch}</div>
+                    </div>
+                    <button onclick="deploySelectedRepoPrompt('${r.full_name}', '${r.clone_url}', '${r.default_branch}')" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-3 py-1.5 rounded transition">
+                        Deploy
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function filterRepoList() {
+            const query = document.getElementById('repoSearch').value.toLowerCase();
+            const filtered = allRepos.filter(r => r.full_name.toLowerCase().includes(query));
+            renderRepoList(filtered);
+        }
+
+        async function deploySelectedRepoPrompt(name, cloneUrl, branch) {
+            const domain = prompt(`Custom domain for ${name} (e.g. api.example.com, or leave empty):`, '');
+            closeGithubModal();
+            const payload = {
+                name: name,
+                repo_url: cloneUrl,
+                branch: branch,
+                domain: domain ? domain.trim() : undefined,
+                restart_policy: 'on_failure'
+            };
+            try {
+                const res = await fetch('/api/deploy/git', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    alert('Deploy failed: ' + await res.text());
+                    return;
+                }
+                location.reload();
+            } catch (err) {
+                alert('Error deploying: ' + err);
+            }
+        }
+
+        async function handleDeploy(e) {
+            e.preventDefault();
+            const name = document.getElementById('appName').value.trim();
+            const domain = document.getElementById('appDomain').value.trim() || undefined;
+
+            if (activeDeployTab === 'git') {
+                const gitUrl = document.getElementById('gitRepo').value.trim();
+                const branch = document.getElementById('gitBranch').value.trim() || 'main';
+                const policy = document.getElementById('restartPolicy').value;
+
+                const payload = {
+                    name: name,
+                    repo_url: gitUrl,
+                    branch: branch,
+                    domain: domain,
+                    restart_policy: policy
+                };
+                const res = await fetch('/api/deploy/git', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) { alert('Deploy failed: ' + await res.text()); return; }
+            } else {
+                const exec = document.getElementById('appExec').value.trim();
+                const rawArgs = document.getElementById('appArgs').value.trim();
+                const args = rawArgs ? rawArgs.split(/\s+/) : [];
+
+                const payload = {
+                    name: name,
+                    executable: exec,
+                    args: args,
+                    domain: domain,
+                    restart_policy: 'always',
+                    auto_start: true
+                };
+                const res = await fetch('/api/apps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) { alert('Deploy failed: ' + await res.text()); return; }
+            }
+            closeDeployModal();
+            location.reload();
+        }
+
+        async function redeployApp(id) {
+            if (!confirm(`Redeploy latest commit for '${id}'?`)) return;
+            try {
+                const res = await fetch(`/api/apps/${id}/redeploy`, { method: 'POST' });
+                if (!res.ok) { alert('Redeploy failed: ' + await res.text()); return; }
+                location.reload();
+            } catch (err) {
+                alert('Error: ' + err);
+            }
+        }
+
+        async function appAction(id, action) {
+            try {
+                const res = await fetch(`/api/apps/${id}/${action}`, { method: 'POST' });
+                if (!res.ok) { alert(`Failed to ${action}: ` + await res.text()); return; }
+                location.reload();
+            } catch (err) { alert('Error: ' + err); }
+        }
+
+        async function deleteApp(id) {
+            if (!confirm(`Delete project '${id}'?`)) return;
+            try {
+                const res = await fetch(`/api/apps/${id}`, { method: 'DELETE' });
+                if (!res.ok) { alert('Delete failed: ' + await res.text()); return; }
+                location.reload();
+            } catch (err) { alert('Error: ' + err); }
+        }
+
+        async function viewLogs(id, name) {
+            currentLogAppId = id;
+            document.getElementById('logsTitle').innerText = `${name} (${id})`;
+            document.getElementById('logsModal').classList.remove('hidden');
+            await refreshCurrentLogs();
+        }
+
+        async function refreshCurrentLogs() {
+            if (!currentLogAppId) return;
+            const logBox = document.getElementById('logContent');
+            try {
+                const res = await fetch(`/api/apps/${currentLogAppId}/logs`);
+                if (!res.ok) { logBox.innerText = 'Failed to load logs.'; return; }
+                const logs = await res.json();
+                if (logs.length === 0) {
+                    logBox.innerHTML = '<span class="text-zinc-600">No logs generated yet.</span>';
+                    return;
+                }
+                logBox.innerHTML = logs.map(l => {
+                    const time = new Date(l.timestamp * 1000).toLocaleTimeString();
+                    let tagColor = 'text-zinc-500';
+                    if (l.stream === 'build') tagColor = 'text-amber-400 font-semibold';
+                    else if (l.stream === 'system') tagColor = 'text-purple-400 font-semibold';
+                    else if (l.stream === 'stderr') tagColor = 'text-rose-400';
+                    else if (l.stream === 'stdout') tagColor = 'text-emerald-400';
+
+                    return `<div class="py-0.5"><span class="text-zinc-600 select-none mr-2">[${time}]</span><span class="${tagColor} mr-2">[${l.stream}]</span><span>${escapeHtml(l.message)}</span></div>`;
+                }).join('');
+                logBox.scrollTop = logBox.scrollHeight;
+            } catch (err) {
+                logBox.innerText = 'Error loading logs: ' + err;
+            }
+        }
+
+        function copyLogs() {
+            const text = document.getElementById('logContent').innerText;
+            navigator.clipboard.writeText(text);
+            alert('Logs copied to clipboard!');
+        }
+
+        function filterProjectCards() {
+            const q = document.getElementById('projectSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.project-card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const domain = card.getAttribute('data-domain') || '';
+                if (name.includes(q) || domain.includes(q)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDeployModal();
+                closeGithubModal();
+                closePatModal();
+                closeLogsModal();
+            }
+        });
+    </script>
+</body>
+</html>

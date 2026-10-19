@@ -13,15 +13,21 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
-        let host = env::var("PLATFORM_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-        let port = env::var("PLATFORM_PORT")
+        let host = env::var("LAUNCHLITE_HOST")
+            .or_else(|_| env::var("PLATFORM_HOST"))
+            .unwrap_or_else(|_| "127.0.0.1".to_string());
+        let port = env::var("LAUNCHLITE_PORT")
+            .or_else(|_| env::var("PLATFORM_PORT"))
             .ok()
             .and_then(|p| p.parse().ok())
             .unwrap_or(3000);
 
-        let data_dir = env::var("PLATFORM_DATA_DIR").unwrap_or_else(|_| "./data".to_string());
-        let db_path =
-            env::var("PLATFORM_DB").unwrap_or_else(|_| format!("{}/platform.db", data_dir));
+        let data_dir = env::var("LAUNCHLITE_DATA_DIR")
+            .or_else(|_| env::var("PLATFORM_DATA_DIR"))
+            .unwrap_or_else(|_| "./data".to_string());
+        let db_path = env::var("LAUNCHLITE_DB")
+            .or_else(|_| env::var("PLATFORM_DB"))
+            .unwrap_or_else(|_| format!("{}/launchlite.db", data_dir));
 
         let github_client_id = env::var("GITHUB_CLIENT_ID").ok().filter(|s| !s.is_empty());
         let github_client_secret = env::var("GITHUB_CLIENT_SECRET")

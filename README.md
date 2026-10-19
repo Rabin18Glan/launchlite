@@ -1,12 +1,12 @@
-# Lightweight Rust PaaS
+# LaunchLite — Lightweight Rust PaaS
 
-A minimal, ultra-low-overhead application hosting platform written in pure Rust.
+A minimal, ultra-low-overhead application hosting platform written in pure Rust, featuring a clean Vercel-inspired dashboard.
 
 ## Architecture & Goals
 - **Minimal RAM footprint**: ~4.8 MB to 6.4 MB idle RSS memory.
-- **Small binary size**: Standalone release binary of ~4.1 MB.
-- **Modular architecture**: Clean separation across models, db, auth, github, builder, execution, api, and web layers.
-- **Custom Domains & Built-in Reverse Proxy**: Assign custom domains (like Vercel) with zero external proxy dependencies. Incoming HTTP requests are dynamically routed to the respective internal application port based on the `Host` header.
+- **Small binary size**: Standalone release binary of ~4.7 MB.
+- **Vercel-Style Clean UI**: Server-rendered frontend using [`axum-template`](https://docs.rs/axum-template/latest/axum_template/) with [MiniJinja](https://github.com/mitsuhiko/minijinja) and Tailwind CSS via CDN. Zero Node.js/npm dependencies, instant fast iteration, and clean dark aesthetic.
+- **Custom Domains & Built-in Reverse Proxy**: Assign custom domains (e.g. `api.example.com`, `myapp.domain.com`) with zero external proxy dependencies. Incoming HTTP requests are dynamically routed to the respective internal application port based on the `Host` header.
 - **Caddyfile Auto-Generation**: Instant Caddy configuration export (`GET /api/system/caddyfile`) for automated Let's Encrypt TLS certificates in production.
 - **Direct GitHub & Git Deployment**: Deploy directly from any GitHub repository with automatic project type detection (Rust, Node.js, Python, Go, Static HTML).
 - **Dual Authentication**: GitHub OAuth 2.0 flow or instant Personal Access Token (PAT) connection.
@@ -52,13 +52,31 @@ src/
 │   ├── builds.rs          # Git deployment and redeployment triggers
 │   ├── proxy.rs           # Built-in Host header reverse proxy forwarder
 │   ├── system.rs          # Health, metrics, and Caddyfile export
-│   └── mod.rs             # Router assembly & app state
-├── web/                   # Server-rendered HTML frontend
-│   ├── dashboard.rs       # Modern responsive UI with domain badges & GitHub modal
-│   └── mod.rs
+│   └── mod.rs             # Router assembly & app state (holds TemplateEngine)
+├── web/                   # axum-template + MiniJinja + Tailwind CSS UI
+│   ├── templates/         # Embedded HTML templates
+│   │   └── dashboard.html # Vercel-style clean dark UI with Tailwind CDN
+│   └── mod.rs             # TemplateEngine setup and view data mappers
 ├── metrics.rs             # Linux /proc reader (RSS memory, binary size)
 └── main.rs                # Platform entrypoint & graceful shutdown trap
 ```
+
+---
+
+## Running the Platform
+
+```bash
+# Build in release mode
+cargo build --release
+
+# Run the server on port 3000
+./target/release/launchlite
+
+# Or with auto-reload during development
+cargo watch -c -x run
+```
+
+Then open `http://localhost:3000` in your browser.
 
 ---
 
@@ -67,11 +85,12 @@ src/
 Each application can have a custom domain (e.g., `api.example.com`, `myapp.domain.com`, `myapp.local`):
 
 ### 1. In the Web Dashboard
-1. Click **+ Deploy App** or **Deploy GitHub Repo**.
-2. Enter your custom domain in the **Custom Domain** field (e.g. `api.example.com`).
-3. Deploy! The platform will:
+1. Click **+ New Project**.
+2. Select **Git Repository** or **Executable / Command**.
+3. Enter your custom domain in the **Custom Domain** field (e.g. `api.example.com`).
+4. Deploy! The platform will:
    - Automatically allocate an internal port (e.g. `10000`) and inject `PORT=10000` into the app.
-   - Show a clickable `🌐 api.example.com` badge in the dashboard.
+   - Show a clickable `🌐 api.example.com` pill in the project card.
    - Route any incoming HTTP request with `Host: api.example.com` directly to the app.
 
 ### 2. Via the API
@@ -98,4 +117,4 @@ api.example.com {
     reverse_proxy 127.0.0.1:10000
 }
 ```
-Or simply point Caddy / Cloudflare to the platform's port, and the built-in Rust reverse proxy handles the `Host` header routing automatically!
+Or simply point Caddy or Cloudflare to the platform's port, and the built-in Rust reverse proxy handles the `Host` header routing automatically!

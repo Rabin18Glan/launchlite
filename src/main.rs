@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "serverless_platform=info".into()),
+                .unwrap_or_else(|_| "launchlite=info,serverless_platform=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -40,16 +40,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     manager.init(restart_rx).await?;
 
     let github = GithubClient::new();
+    let engine = crate::web::create_template_engine();
     let state = AppState {
         manager: Arc::clone(&manager),
         github,
         config: config.clone(),
+        engine,
     };
 
     let app = create_router(state);
 
     let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
-    info!("Starting Rust Control Server on http://{}", addr);
+    info!("Starting LaunchLite on http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
 
@@ -57,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_graceful_shutdown(shutdown_signal(Arc::clone(&manager)))
         .await?;
 
-    info!("Platform server shut down gracefully.");
+    info!("LaunchLite shut down gracefully.");
     Ok(())
 }
 
@@ -87,9 +89,9 @@ async fn shutdown_signal(manager: Arc<ExecutionManager>) {
     info!("Termination signal received. Gracefully stopping all applications...");
     let apps = manager.list_apps().await;
     for app in apps {
-        if matches!(app.status, models::AppStatus::Running { .. }) {
-            info!(app = %app.config.id, "Stopping app during platform shutdown...");
-            let _ = manager.stop_app(&app.config.id).await;
+        if let Err(e) = manager.stop_app(&app.config.id).await {
+            tracing::warn!("Error stopping app {}: {}", app.config.id, e);
         }
     }
+    info!("All applications stopped.");
 }

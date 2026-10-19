@@ -20,7 +20,7 @@ pub async fn check_health(url_str: &str) -> HealthStatus {
     };
 
     let request = format!(
-        "GET {} HTTP/1.1\r\nHost: {}\r\nUser-Agent: serverless-platform-healthcheck/0.1\r\nConnection: close\r\n\r\n",
+        "GET {} HTTP/1.1\r\nHost: {}\r\nUser-Agent: launchlite-healthcheck/0.1\r\nConnection: close\r\n\r\n",
         path, host
     );
 

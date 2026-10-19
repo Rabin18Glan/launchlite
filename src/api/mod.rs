@@ -11,18 +11,20 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
+use axum_template::RenderHtml;
 use std::sync::Arc;
 
 use crate::config::Config;
 use crate::execution::ExecutionManager;
 use crate::github::GithubClient;
-use crate::web::render_dashboard;
+use crate::web::{TemplateEngine, prepare_dashboard_data};
 
 #[derive(Clone)]
 pub struct AppState {
     pub manager: Arc<ExecutionManager>,
     pub github: GithubClient,
     pub config: Config,
+    pub engine: TemplateEngine,
 }
 
 pub fn create_router(state: AppState) -> Router {
@@ -87,18 +89,19 @@ async fn dashboard_or_proxy_handler(
         }
     }
 
-    // Otherwise render PaaS Control Dashboard
+    // Otherwise render PaaS Control Dashboard using axum-template
     let metrics = state.manager.get_system_metrics().await;
     let apps = state.manager.list_apps().await;
     let current_user = auth::get_session_from_headers(&state, &headers)
         .ok()
         .map(|s| s.user);
 
-    render_dashboard(
+    let data = prepare_dashboard_data(
         &metrics,
         &apps,
         current_user.as_ref(),
         state.config.has_github_oauth(),
-    )
-    .into_response()
+    );
+
+    RenderHtml("dashboard.html", state.engine.clone(), data).into_response()
 }
