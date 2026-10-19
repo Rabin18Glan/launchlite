@@ -1,0 +1,29 @@
+[package]
+name = "api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "api"
+path = "src/lib.rs"
+
+[[bin]]
+name = "launchlite-server"
+path = "src/main.rs"
+
+[dependencies]
+common = { workspace = true }
+db = { workspace = true }
+builder = { workspace = true }
+runtime = { workspace = true }
+auth = { workspace = true }
+web = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+axum-template = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

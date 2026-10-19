@@ -1,11 +1,34 @@
-[package]
-name = "launchlite"
+[workspace]
+resolver = "2"
+members = [
+    "packages/common",
+    "packages/db",
+    "packages/builder",
+    "services/auth",
+    "services/runtime",
+    "services/web",
+    "apps/api",
+    "apps/cli",
+]
+default-members = ["apps/cli"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
-description = "A minimal, ultra-low-overhead application hosting platform in pure Rust with a clean, modern dark dashboard"
+authors = ["rabin18glan"]
 
-[dependencies]
+[workspace.dependencies]
+# Internal workspace crates
+common = { path = "packages/common" }
+db = { path = "packages/db" }
+builder = { path = "packages/builder" }
+auth = { path = "services/auth" }
+runtime = { path = "services/runtime" }
+web = { path = "services/web" }
+api = { path = "apps/api" }
+
+# Common external dependencies
 tokio = { version = "1.43", features = ["macros", "rt-multi-thread", "process", "time", "sync", "io-util", "fs", "signal"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio", "query"] }
 axum-template = { version = "3.0", features = ["minijinja"] }

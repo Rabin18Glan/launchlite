@@ -1,6 +1,38 @@
-# LaunchLite — Lightweight Rust PaaS
+# LaunchLite — Lightweight Pure-Rust PaaS
 
-A minimal, ultra-low-overhead application hosting platform written in pure Rust, featuring a clean, responsive dark dashboard.
+A minimal, ultra-low-overhead application hosting platform written in pure Rust, organized as a modular Cargo workspace monorepo.
+
+## One-Line Install & Run
+
+### 1. Install LaunchLite
+```bash
+curl -fsSL https://raw.githubusercontent.com/Rabin18Glan/launchlite/main/install.sh | bash
+```
+
+### 2. Run as Background Service (One-Liner)
+```bash
+# Start in background on default port 3000
+launchlite start
+
+# Or start on a custom port
+launchlite start --port 8080
+```
+
+### 3. Manage the Background Service
+```bash
+# Check live status, memory (RSS), and running apps
+launchlite status
+
+# Stop the background service
+launchlite stop
+
+# (Optional) Install as permanent systemd service (auto-starts on boot)
+sudo launchlite service install --port 3000
+```
+
+Open `http://localhost:3000` (or your configured port) in your browser.
+
+---
 
 ## Architecture & Goals
 - **Minimal RAM footprint**: ~4.8 MB to 6.4 MB idle RSS memory.
@@ -16,68 +48,35 @@ A minimal, ultra-low-overhead application hosting platform written in pure Rust,
 
 ---
 
-## Modular Codebase Structure
+## CLI Command Reference
 
-```
-src/
-├── config.rs              # Environment configuration & OAuth credentials
-├── models/                # Domain models
-│   ├── app.rs             # AppConfig (domain, port, git), PlatformExport, ImportSummary
-│   ├── auth.rs            # UserSession, GithubUser, GithubRepo
-│   ├── build.rs           # BuildJob, BuildStatus, ProjectType
-│   └── mod.rs             # SystemMetrics and re-exports
-├── db/                    # SQLite database persistence
-│   ├── apps.rs            # Application CRUD (with domain & port columns)
-│   ├── builds.rs          # Build history and status
-│   ├── sessions.rs        # User sessions & OAuth tokens
-│   └── mod.rs             # Thread-safe Database wrapper
-├── auth/                  # Authentication & OAuth
-│   ├── oauth.rs           # OAuth authorization URL, code exchange, PAT auth
-│   └── mod.rs
-├── github/                # GitHub API integration
-│   ├── client.rs          # User profile and repository listing client
-│   └── mod.rs
-├── builder/               # Git deployment & build pipeline
-│   ├── detector.rs        # Auto-detects Rust, Node, Python, Go, Static projects
-│   ├── git.rs             # Git clone, fetch, branch checkout, commit hash
-│   ├── runner.rs          # Build execution with live log streaming
-│   └── mod.rs
-├── execution/             # Process runtime & supervisor
-│   ├── health.rs          # Zero-dependency async TCP/HTTP health checker
-│   ├── manager.rs         # ExecutionManager (port allocation, domains, export/import)
-│   ├── process.rs         # Safe process execution (SIGTERM/SIGKILL, log buffer)
-│   └── mod.rs
-├── api/                   # Axum REST API endpoints
-│   ├── apps.rs            # App CRUD and control
-│   ├── auth.rs            # GitHub OAuth & repository endpoints
-│   ├── builds.rs          # Git deployment and redeployment triggers
-│   ├── proxy.rs           # Built-in Host header reverse proxy forwarder
-│   ├── system.rs          # Health, metrics, export, import, and Caddyfile
-│   └── mod.rs             # Router assembly & app state (holds TemplateEngine)
-├── web/                   # axum-template + MiniJinja + Tailwind CSS UI
-│   ├── templates/         # Embedded HTML templates
-│   │   └── dashboard.html # Modern clean dark UI with Tailwind CDN
-│   └── mod.rs             # TemplateEngine setup and view data mappers
-├── metrics.rs             # Linux /proc reader (RSS memory, binary size)
-└── main.rs                # Platform entrypoint & graceful shutdown trap
-```
+| Command | Description |
+| :--- | :--- |
+| `launchlite` | Runs the server in foreground on port `3000` (or `LAUNCHLITE_PORT`) |
+| `launchlite -p <PORT>` | Runs the server in foreground on specified port |
+| `launchlite start [-p PORT]` | Spawns LaunchLite as a detached background service |
+| `launchlite stop` | Stops the running background service |
+| `launchlite status` | Displays live background PID, HTTP API status, and RAM RSS |
+| `launchlite service install [-p PORT]` | Generates and enables a Linux `systemd` service unit |
+| `launchlite --help` | Displays help message and command examples |
 
 ---
 
-## Running the Platform
+## Development & Building
 
 ```bash
-# Build in release mode
-cargo build --release
+# Build all crates in workspace
+cargo build
 
-# Run the server on port 3000
-./target/release/launchlite
+# Run unit tests across all crates
+cargo test --workspace
 
-# Or with auto-reload during development
-cargo watch -c -x run
+# Auto-recompile during development with cargo-watch
+cargo watch -c -x "run -p cli"
+
+# Compile optimized release binary
+cargo build --release -p cli
 ```
-
-Then open `http://localhost:3000` in your browser.
 
 ---
 
@@ -127,19 +126,6 @@ curl -X POST http://127.0.0.1:3000/api/deploy/git \
     "restart_policy": "on_failure"
   }'
 ```
-
-### 3. Production SSL with Caddy (Optional)
-If running behind Caddy for automatic Let's Encrypt SSL certificates, view or export the auto-generated Caddyfile:
-```bash
-curl http://127.0.0.1:3000/api/system/caddyfile
-```
-Output:
-```caddyfile
-api.example.com {
-    reverse_proxy 127.0.0.1:10000
-}
-```
-Or simply point Caddy or Cloudflare to the platform's port, and the built-in Rust reverse proxy handles the `Host` header routing automatically!
 
 ---
 
