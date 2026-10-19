@@ -1,11 +1,12 @@
 # LaunchLite — Lightweight Rust PaaS
 
-A minimal, ultra-low-overhead application hosting platform written in pure Rust, featuring a clean Vercel-inspired dashboard.
+A minimal, ultra-low-overhead application hosting platform written in pure Rust, featuring a clean, responsive dark dashboard.
 
 ## Architecture & Goals
 - **Minimal RAM footprint**: ~4.8 MB to 6.4 MB idle RSS memory.
 - **Small binary size**: Standalone release binary of ~4.7 MB.
-- **Vercel-Style Clean UI**: Server-rendered frontend using [`axum-template`](https://docs.rs/axum-template/latest/axum_template/) with [MiniJinja](https://github.com/mitsuhiko/minijinja) and Tailwind CSS via CDN. Zero Node.js/npm dependencies, instant fast iteration, and clean dark aesthetic.
+- **Modern Clean UI**: Server-rendered frontend using [`axum-template`](https://docs.rs/axum-template/latest/axum_template/) with [MiniJinja](https://github.com/mitsuhiko/minijinja) and Tailwind CSS via CDN. Zero Node.js/npm dependencies, instant fast iteration, and clean dark aesthetic.
+- **VPS Migration (Export & Import)**: 1-click migration between VPS servers. Export all project configs, custom domains, git repos, and environment variables to a portable backup JSON file, and restore on any new server instantly.
 - **Custom Domains & Built-in Reverse Proxy**: Assign custom domains (e.g. `api.example.com`, `myapp.domain.com`) with zero external proxy dependencies. Incoming HTTP requests are dynamically routed to the respective internal application port based on the `Host` header.
 - **Caddyfile Auto-Generation**: Instant Caddy configuration export (`GET /api/system/caddyfile`) for automated Let's Encrypt TLS certificates in production.
 - **Direct GitHub & Git Deployment**: Deploy directly from any GitHub repository with automatic project type detection (Rust, Node.js, Python, Go, Static HTML).
@@ -21,7 +22,7 @@ A minimal, ultra-low-overhead application hosting platform written in pure Rust,
 src/
 ├── config.rs              # Environment configuration & OAuth credentials
 ├── models/                # Domain models
-│   ├── app.rs             # AppConfig (domain, port, git), AppStatus, HealthStatus
+│   ├── app.rs             # AppConfig (domain, port, git), PlatformExport, ImportSummary
 │   ├── auth.rs            # UserSession, GithubUser, GithubRepo
 │   ├── build.rs           # BuildJob, BuildStatus, ProjectType
 │   └── mod.rs             # SystemMetrics and re-exports
@@ -43,7 +44,7 @@ src/
 │   └── mod.rs
 ├── execution/             # Process runtime & supervisor
 │   ├── health.rs          # Zero-dependency async TCP/HTTP health checker
-│   ├── manager.rs         # ExecutionManager (port allocation, domains, Caddyfile)
+│   ├── manager.rs         # ExecutionManager (port allocation, domains, export/import)
 │   ├── process.rs         # Safe process execution (SIGTERM/SIGKILL, log buffer)
 │   └── mod.rs
 ├── api/                   # Axum REST API endpoints
@@ -51,11 +52,11 @@ src/
 │   ├── auth.rs            # GitHub OAuth & repository endpoints
 │   ├── builds.rs          # Git deployment and redeployment triggers
 │   ├── proxy.rs           # Built-in Host header reverse proxy forwarder
-│   ├── system.rs          # Health, metrics, and Caddyfile export
+│   ├── system.rs          # Health, metrics, export, import, and Caddyfile
 │   └── mod.rs             # Router assembly & app state (holds TemplateEngine)
 ├── web/                   # axum-template + MiniJinja + Tailwind CSS UI
 │   ├── templates/         # Embedded HTML templates
-│   │   └── dashboard.html # Vercel-style clean dark UI with Tailwind CDN
+│   │   └── dashboard.html # Modern clean dark UI with Tailwind CDN
 │   └── mod.rs             # TemplateEngine setup and view data mappers
 ├── metrics.rs             # Linux /proc reader (RSS memory, binary size)
 └── main.rs                # Platform entrypoint & graceful shutdown trap
@@ -80,7 +81,28 @@ Then open `http://localhost:3000` in your browser.
 
 ---
 
-## Custom Domain Configuration (Vercel-style)
+## Migrating Between VPS Servers (Export & Import)
+
+LaunchLite includes built-in migration to easily move between VPS providers:
+
+### In the Web Dashboard
+1. **On your old VPS**: Click **Export** in the top navigation bar to download `launchlite-backup-<timestamp>.json`.
+2. **On your new VPS**: Click **Import**, select your backup JSON file (or paste its content), and click **Import & Restore**. All applications, ports, domains, and git repos are immediately registered.
+
+### Via the REST API
+```bash
+# 1. Export backup from old server
+curl -s http://old-vps:3000/api/system/export > backup.json
+
+# 2. Import backup into new server
+curl -X POST http://new-vps:3000/api/system/import \
+  -H "Content-Type: application/json" \
+  --data-binary @backup.json
+```
+
+---
+
+## Custom Domain Configuration
 
 Each application can have a custom domain (e.g., `api.example.com`, `myapp.domain.com`, `myapp.local`):
 
@@ -118,3 +140,9 @@ api.example.com {
 }
 ```
 Or simply point Caddy or Cloudflare to the platform's port, and the built-in Rust reverse proxy handles the `Host` header routing automatically!
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

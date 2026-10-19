@@ -2,6 +2,8 @@
 name = "launchlite"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "A minimal, ultra-low-overhead application hosting platform in pure Rust with a clean, modern dark dashboard"
 
 [dependencies]
 tokio = { version = "1.43", features = ["macros", "rt-multi-thread", "process", "time", "sync", "io-util", "fs", "signal"] }

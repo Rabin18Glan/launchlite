@@ -6,6 +6,42 @@
     <title>{{ platform_name }} · Cloud Dashboard</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Migration / Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
+                <div>
+                    <h3 class="text-sm font-semibold text-white tracking-tight">Migrate / Import Projects</h3>
+                    <p class="text-xs text-zinc-500 mt-0.5">Restore configurations, domains, and git repos from another VPS</p>
+                </div>
+                <button onclick="closeImportModal()" class="text-zinc-500 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="importForm" onsubmit="handleImportSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Backup JSON File</label>
+                    <input type="file" id="importFile" accept=".json,application/json" onchange="loadImportFile(this)" class="block w-full text-xs text-zinc-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-zinc-200 hover:file:bg-zinc-800 cursor-pointer border border-zinc-800 rounded-lg p-2 bg-black" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Or Paste JSON Content</label>
+                    <textarea id="importJsonText" rows="6" placeholder='{"version":"1.0","apps":[...]}' class="w-full bg-black border border-zinc-800 text-xs font-mono text-zinc-200 rounded-lg p-3 focus:border-zinc-500 focus:outline-none transition"></textarea>
+                </div>
+
+                <div id="importStatus" class="text-xs hidden p-3 rounded-lg border"></div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="closeImportModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
+                    <button type="submit" id="importSubmitBtn" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
+                        Import & Restore
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -14,17 +50,6 @@
                     fontFamily: {
                         sans: ['Geist', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
                         mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
-                    },
-                    colors: {
-                        vercel: {
-                            bg: '#000000',
-                            card: '#0a0a0a',
-                            subtle: '#121212',
-                            border: '#27272a',
-                            borderMuted: '#1e1e20',
-                            textMuted: '#71717a',
-                            textSecondary: '#a1a1aa',
-                        }
                     }
                 }
             }
@@ -53,7 +78,7 @@
     <header class="border-b border-zinc-800/80 bg-black/80 backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
-                <!-- Vercel-style Brand Mark -->
+                <!-- Brand Mark -->
                 <a href="/" class="flex items-center gap-2.5 text-white hover:opacity-90 transition">
                     <svg class="w-5 h-5 fill-white" viewBox="0 0 76 65" fill="none">
                         <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
@@ -93,7 +118,17 @@
                 </button>
                 {% endif %}
 
-                <!-- Primary Deploy Button (Vercel Solid White) -->
+                <!-- Export & Import (VPS Migration) -->
+                <a href="/api/system/export" download title="Export all project configs for VPS migration" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                    <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export
+                </a>
+                <button onclick="openImportModal()" title="Import projects from backup JSON" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                    <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Import
+                </button>
+
+                <!-- Primary Deploy Button -->
                 <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-white text-black hover:bg-zinc-200 px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-tight transition duration-150 shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                     New Project
@@ -105,7 +140,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
 
-        <!-- Telemetry Strip (Vercel-style minimal vitals) -->
+        <!-- Telemetry Strip -->
         <section class="border border-zinc-800/80 bg-zinc-950/60 rounded-xl p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform RAM (RSS)</div>
@@ -149,7 +184,7 @@
             </div>
         </div>
 
-        <!-- Projects List (Clean Vercel Card Style) -->
+        <!-- Projects List -->
         {% if apps %}
         <div class="grid grid-cols-1 gap-3.5" id="projectsContainer">
             {% for app in apps %}
@@ -162,7 +197,7 @@
                             <span class="text-base font-semibold text-white tracking-tight truncate">{{ app.name }}</span>
                             <span class="text-[11px] font-mono text-zinc-500 bg-zinc-900/80 border border-zinc-800/80 px-2 py-0.5 rounded">{{ app.id }}</span>
                             
-                            <!-- Custom Domain Pill (Vercel-style domain link) -->
+                            <!-- Custom Domain Pill -->
                             {% if app.domain %}
                             <a href="http://{{ app.domain }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-mono text-blue-400 hover:text-blue-300 bg-blue-950/30 border border-blue-900/40 px-2.5 py-0.5 rounded-full transition">
                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
@@ -281,7 +316,7 @@
 
     </main>
 
-    <!-- Deploy Modal (Vercel Style) -->
+    <!-- Deploy Modal -->
     <div id="deployModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
             <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
@@ -396,7 +431,7 @@
         </div>
     </div>
 
-    <!-- Terminal Log Console Modal (Vercel Style) -->
+    <!-- Terminal Log Console Modal -->
     <div id="logsModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-black border border-zinc-800 rounded-xl max-w-3xl w-full p-5 shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800/80">
@@ -423,6 +458,42 @@
         </div>
     </div>
 
+    <!-- Migration / Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
+                <div>
+                    <h3 class="text-sm font-semibold text-white tracking-tight">Migrate / Import Projects</h3>
+                    <p class="text-xs text-zinc-500 mt-0.5">Restore configurations, domains, and git repos from another VPS</p>
+                </div>
+                <button onclick="closeImportModal()" class="text-zinc-500 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="importForm" onsubmit="handleImportSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Backup JSON File</label>
+                    <input type="file" id="importFile" accept=".json,application/json" onchange="loadImportFile(this)" class="block w-full text-xs text-zinc-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-zinc-200 hover:file:bg-zinc-800 cursor-pointer border border-zinc-800 rounded-lg p-2 bg-black" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Or Paste JSON Content</label>
+                    <textarea id="importJsonText" rows="6" placeholder='{"version":"1.0","apps":[...]}' class="w-full bg-black border border-zinc-800 text-xs font-mono text-zinc-200 rounded-lg p-3 focus:border-zinc-500 focus:outline-none transition"></textarea>
+                </div>
+
+                <div id="importStatus" class="text-xs hidden p-3 rounded-lg border"></div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="closeImportModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
+                    <button type="submit" id="importSubmitBtn" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
+                        Import & Restore
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let currentLogAppId = null;
         let allRepos = [];
@@ -433,6 +504,68 @@
         function openPatModal() { document.getElementById('patModal').classList.remove('hidden'); }
         function closePatModal() { document.getElementById('patModal').classList.add('hidden'); }
         function closeGithubModal() { document.getElementById('githubModal').classList.add('hidden'); }
+        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('importStatus').classList.add('hidden'); }
+        function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
+
+        function loadImportFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('importJsonText').value = e.target.result;
+                };
+                reader.readAsText(input.files[0]);
+            }
+        }
+
+        async function handleImportSubmit(e) {
+            e.preventDefault();
+            const jsonStr = document.getElementById('importJsonText').value.trim();
+            const statusDiv = document.getElementById('importStatus');
+            const submitBtn = document.getElementById('importSubmitBtn');
+
+            if (!jsonStr) {
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.innerText = "Please select a backup JSON file or paste JSON content.";
+                return;
+            }
+
+            let payload;
+            try {
+                payload = JSON.parse(jsonStr);
+            } catch (err) {
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.innerText = "Invalid JSON: " + err.message;
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Importing...";
+
+            try {
+                const res = await fetch('/api/system/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    statusDiv.className = "text-xs p-3 rounded-lg border bg-emerald-950/40 border-emerald-900/50 text-emerald-400 block";
+                    statusDiv.innerText = `Migration successful! ${data.imported} new imported, ${data.updated} updated (${data.total} total). Reloading...`;
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                    statusDiv.innerText = data.error || (data.errors ? data.errors.join(", ") : "Import failed");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Import & Restore";
+                }
+            } catch (err) {
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.innerText = "Network error: " + err.message;
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Import & Restore";
+            }
+        }
         function closeLogsModal() { document.getElementById('logsModal').classList.add('hidden'); currentLogAppId = null; }
 
         function switchDeployTab(tab) {

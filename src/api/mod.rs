@@ -33,6 +33,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/health", get(system::health_handler))
         .route("/api/system", get(system::get_system_metrics_handler))
         .route("/api/system/caddyfile", get(system::get_caddyfile_handler))
+        .route("/api/system/export", get(system::export_handler))
+        .route("/api/system/import", post(system::import_handler))
         // App lifecycle
         .route(
             "/api/apps",
@@ -89,7 +91,7 @@ async fn dashboard_or_proxy_handler(
         }
     }
 
-    // Otherwise render PaaS Control Dashboard using axum-template
+    // Otherwise render Control Dashboard using axum-template
     let metrics = state.manager.get_system_metrics().await;
     let apps = state.manager.list_apps().await;
     let current_user = auth::get_session_from_headers(&state, &headers)

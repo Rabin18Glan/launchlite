@@ -10,7 +10,7 @@ use crate::execution::health::check_health;
 use crate::execution::process::{LogBuffer, MAX_LOG_LINES, ProcessExitReason, spawn_application};
 use crate::metrics::{get_binary_size, get_process_memory, get_self_memory, is_process_alive};
 use crate::models::{
-    AppConfig, AppInfo, AppStatus, CreateAppRequest, DeployRepoRequest, GitDeploymentConfig,
+    AppConfig, AppInfo, AppStatus, ImportSummary, PlatformExport, CreateAppRequest, DeployRepoRequest, GitDeploymentConfig,
     HealthStatus, LogLine, RestartPolicy, SystemMetrics, current_timestamp,
 };
 
@@ -558,7 +558,7 @@ impl ExecutionManager {
         let apps = self.apps.read().await;
         let mut lines = Vec::new();
 
-        lines.push("# Auto-generated Caddyfile by Rust PaaS".to_string());
+        lines.push("# Auto-generated Caddyfile by LaunchLite".to_string());
         for runtime in apps.values() {
             if let (Some(domain), Some(port)) = (&runtime.config.domain, runtime.config.port) {
                 lines.push(format!(
@@ -573,6 +573,62 @@ impl ExecutionManager {
     pub async fn get_logs(&self, id: &str) -> Option<Vec<LogLine>> {
         let apps = self.apps.read().await;
         apps.get(id).map(|r| r.logs.get_lines())
+    }
+
+    pub async fn export_data(&self) -> PlatformExport {
+        let apps = self.apps.read().await;
+        let mut configs: Vec<AppConfig> = apps.values().map(|r| r.config.clone()).collect();
+        configs.sort_by(|a, b| a.name.cmp(&b.name));
+
+        PlatformExport {
+            version: "1.0".to_string(),
+            platform: "LaunchLite".to_string(),
+            exported_at: current_timestamp(),
+            apps: configs,
+        }
+    }
+
+    pub async fn import_data(self: &Arc<Self>, export: PlatformExport) -> Result<ImportSummary, String> {
+        let mut imported = 0;
+        let mut updated = 0;
+        let mut failed = 0;
+        let mut errors = Vec::new();
+
+        for config in export.apps {
+            let app_id = config.id.clone();
+            if let Err(e) = self.db.save_app(&config) {
+                errors.push(format!("{}: DB error: {}", app_id, e));
+                failed += 1;
+                continue;
+            }
+
+            let mut apps = self.apps.write().await;
+            if let Some(runtime) = apps.get_mut(&app_id) {
+                runtime.config = config;
+                updated += 1;
+            } else {
+                let runtime = AppRuntime {
+                    config,
+                    status: AppStatus::Stopped,
+                    health: HealthStatus::Unknown,
+                    logs: LogBuffer::new(MAX_LOG_LINES),
+                    stop_tx: None,
+                    restart_count: 0,
+                    started_at: None,
+                    is_building: false,
+                };
+                apps.insert(app_id, runtime);
+                imported += 1;
+            }
+        }
+
+        Ok(ImportSummary {
+            total: imported + updated + failed,
+            imported,
+            updated,
+            failed,
+            errors,
+        })
     }
 
     fn build_app_info(&self, runtime: &AppRuntime) -> AppInfo {

@@ -134,3 +134,20 @@ pub struct LogLine {
     pub stream: String, // "stdout", "stderr", "system", "build"
     pub message: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlatformExport {
+    pub version: String,
+    pub platform: String,
+    pub exported_at: u64,
+    pub apps: Vec<AppConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImportSummary {
+    pub total: usize,
+    pub imported: usize,
+    pub updated: usize,
+    pub failed: usize,
+    pub errors: Vec<String>,
+}
