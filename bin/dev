@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+# LaunchLite Local Development Runner
+# Auto-reloads on file changes if cargo-watch is installed, or runs directly.
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$DIR"
+
+if command -v cargo-watch >/dev/null 2>&1; then
+    echo "Starting LaunchLite with hot-reload (cargo-watch)..."
+    cargo watch -c -w packages -w services -w apps -i "data/*" -x "run -p cli -- dev $@"
+else
+    echo "cargo-watch not found. Running LaunchLite directly (install cargo-watch for hot-reload)..."
+    cargo run -p cli -- dev "$@"
+fi

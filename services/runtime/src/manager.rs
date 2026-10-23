@@ -663,14 +663,22 @@ impl ExecutionManager {
         let mem = get_self_memory();
         let apps = self.apps.read().await;
         let total_apps = apps.len();
-        let running_apps = apps
-            .values()
-            .filter(|r| matches!(r.status, AppStatus::Running { .. }))
-            .count();
+        let mut running_apps = 0;
+        let mut apps_rss_bytes = 0u64;
+
+        for runtime in apps.values() {
+            if let AppStatus::Running { pid, .. } = runtime.status {
+                running_apps += 1;
+                if let Some(proc_mem) = get_process_memory(pid) {
+                    apps_rss_bytes += proc_mem.rss_bytes;
+                }
+            }
+        }
         let now = current_timestamp();
 
         SystemMetrics {
             platform_rss_bytes: mem.rss_bytes,
+            apps_rss_bytes,
             platform_vmsize_bytes: mem.vm_size_bytes,
             platform_uptime_secs: if now >= self.platform_started_at {
                 now - self.platform_started_at

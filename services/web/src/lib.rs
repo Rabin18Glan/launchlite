@@ -2,7 +2,7 @@ use axum_template::engine::Engine;
 use minijinja::Environment;
 use serde::Serialize;
 
-use common::models::{AppInfo, AppStatus, GithubUser, HealthStatus, SystemMetrics};
+use common::models::{AppInfo, AppStatus, GithubUser, HealthStatus, RestartPolicy, SystemMetrics};
 
 pub type TemplateEngine = Engine<Environment<'static>>;
 
@@ -17,6 +17,7 @@ pub fn create_template_engine() -> TemplateEngine {
 #[derive(Debug, Serialize)]
 pub struct DashboardData {
     pub platform_name: String,
+    pub apps_ram_mb: String,
     pub platform_ram_mb: String,
     pub platform_vmsize_mb: String,
     pub binary_size_mb: String,
@@ -48,6 +49,10 @@ pub struct AppViewData {
     pub uptime_formatted: Option<String>,
     pub restart_count: u32,
     pub has_git: bool,
+    pub restart_policy: String,
+    pub health_check_url: Option<String>,
+    pub env_vars: Vec<(String, String)>,
+    pub created_at_formatted: String,
 }
 
 pub fn prepare_dashboard_data(
@@ -56,10 +61,12 @@ pub fn prepare_dashboard_data(
     current_user: Option<&GithubUser>,
     has_oauth_config: bool,
 ) -> DashboardData {
-    let platform_ram_mb = format!(
+    let total_apps_rss_bytes: u64 = apps.iter().filter_map(|app| app.rss_bytes).sum();
+    let apps_ram_mb = format!(
         "{:.1}",
-        (metrics.platform_rss_bytes as f64) / (1024.0 * 1024.0)
+        (total_apps_rss_bytes as f64) / (1024.0 * 1024.0)
     );
+    let platform_ram_mb = apps_ram_mb.clone();
     let platform_vmsize_mb = format!(
         "{:.1}",
         (metrics.platform_vmsize_bytes as f64) / (1024.0 * 1024.0)
@@ -125,6 +132,17 @@ pub fn prepare_dashboard_data(
             let is_running = matches!(app.status, AppStatus::Running { .. });
             let has_git = app.config.git.is_some();
 
+            let restart_policy = match app.config.restart_policy {
+                RestartPolicy::Always => "Always".to_string(),
+                RestartPolicy::OnFailure => "On Failure".to_string(),
+                RestartPolicy::Never => "Never".to_string(),
+            };
+
+            let mut env_vars: Vec<(String, String)> = app.config.env.clone().into_iter().collect();
+            env_vars.sort_by(|a, b| a.0.cmp(&b.0));
+
+            let created_at_formatted = format_timestamp(app.config.created_at);
+
             AppViewData {
                 id: app.config.id.clone(),
                 name: app.config.name.clone(),
@@ -144,12 +162,17 @@ pub fn prepare_dashboard_data(
                 uptime_formatted,
                 restart_count: app.restart_count,
                 has_git,
+                restart_policy,
+                health_check_url: app.config.health_check_url.clone(),
+                env_vars,
+                created_at_formatted,
             }
         })
         .collect();
 
     DashboardData {
         platform_name: "LaunchLite".to_string(),
+        apps_ram_mb,
         platform_ram_mb,
         platform_vmsize_mb,
         binary_size_mb,
@@ -177,4 +200,14 @@ fn format_duration(seconds: u64) -> String {
     } else {
         format!("{}s", secs)
     }
+}
+
+fn format_timestamp(timestamp: u64) -> String {
+    if timestamp == 0 {
+        return "Unknown".to_string();
+    }
+    // Approximate readable date/time (or UTC date string)
+    let days_since_epoch = timestamp / 86400;
+    let year = 1970 + days_since_epoch / 365;
+    format!("Epoch +{}s (~{})", timestamp, year)
 }

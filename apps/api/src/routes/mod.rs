@@ -30,6 +30,7 @@ pub struct AppState {
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(dashboard_or_proxy_handler))
+        .route("/favicon.ico", get(favicon_handler))
         .route("/health", get(system::health_handler))
         .route("/api/system", get(system::get_system_metrics_handler))
         .route("/api/system/caddyfile", get(system::get_caddyfile_handler))
@@ -106,4 +107,14 @@ async fn dashboard_or_proxy_handler(
     );
 
     RenderHtml("dashboard.html", state.engine.clone(), data).into_response()
+}
+
+const FAVICON_BYTES: &[u8] = include_bytes!("../../../../assets/favicon.ico");
+
+async fn favicon_handler() -> Response {
+    (
+        [(header::CONTENT_TYPE, "image/x-icon")],
+        FAVICON_BYTES,
+    )
+        .into_response()
 }

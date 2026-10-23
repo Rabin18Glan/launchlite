@@ -28,6 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("LaunchLite v0.1.0 (modular PaaS)");
                 return Ok(());
             }
+            "dev" => {
+                let port = parse_port(&args, 2).unwrap_or(DEFAULT_PORT);
+                return run_dev(port).await;
+            }
             "start" => {
                 let port = parse_port(&args, 2).unwrap_or(DEFAULT_PORT);
                 return start_background(port);
@@ -90,6 +94,33 @@ fn parse_port(args: &[String], start_idx: usize) -> Option<u16> {
         }
     }
     None
+}
+
+async fn run_dev(port: u16) -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "api=debug,launchlite=debug,cli=debug,runtime=info".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    println!("\x1b[1m\x1b[34m▲ LaunchLite Local Development Server\x1b[0m");
+    println!("─────────────────────────────────────────");
+    println!("  Environment : \x1b[33mdevelopment\x1b[0m");
+    println!("  Dashboard   : \x1b[36mhttp://127.0.0.1:{}\x1b[0m", port);
+    println!(
+        "  REST API    : \x1b[36mhttp://127.0.0.1:{}/api/apps\x1b[0m",
+        port
+    );
+    println!("  Logging     : verbose (debug)");
+    println!("─────────────────────────────────────────");
+    println!("Press Ctrl+C to stop.\n");
+
+    let mut config = Config::from_env();
+    config.port = port;
+
+    api::run_server(config).await
 }
 
 async fn run_foreground(port: u16) -> Result<(), Box<dyn std::error::Error>> {
@@ -340,10 +371,11 @@ USAGE:
     launchlite [COMMAND] [OPTIONS]
 
 COMMANDS:
+    dev                       Run local development server with verbose logs
     start                     Start LaunchLite as a background service
     stop                      Stop the running background service
     status                    Show current status, live apps, and RAM
-    run                       Run in foreground (interactive logs)
+    run                       Run in foreground (standard logs)
     service install           Install and enable a systemd service unit
 
 OPTIONS:
@@ -353,8 +385,8 @@ OPTIONS:
     -v, --version             Show version
 
 EXAMPLES:
-    # Run in foreground on default port 3000
-    launchlite
+    # Run in local dev mode (verbose logs)
+    launchlite dev
 
     # Start in background on custom port 8080
     launchlite start --port 8080

@@ -3,50 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ platform_name }} · Cloud Dashboard</title>
+    <title>{{ platform_name }}</title>
+    <!-- Brand Favicons -->
+    <link rel=icon type=image/x-icon href=/favicon.ico>
+    <link rel=icon type=image/svg+xml href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%239A3412'/%3E%3Cstop offset='100%25' stop-color='%23EA580C'/%3E%3C/linearGradient%3E%3ClinearGradient id='s' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2318181B'/%3E%3Cstop offset='100%25' stop-color='%2309090B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' rx='100' fill='%2309090B'/%3E%3Cg transform='translate(250,250) rotate(-45) translate(-250,-250)'%3E%3Cpath d='M 250 50 C 285 110, 315 190, 315 310 L 370 360 L 300 360 L 285 410 L 215 410 L 200 360 L 130 360 L 185 310 C 185 190, 215 110, 250 50 Z' fill='%23FFFFFF'/%3E%3Cpath d='M 194 316 L 148 350 L 198 350 Z' fill='%239A3412'/%3E%3Cpath d='M 306 316 L 352 350 L 302 350 Z' fill='url(%23g)'/%3E%3Cpath d='M 250 64 C 220 120, 194 195, 194 308 L 204 350 L 250 350 Z' fill='url(%23s)'/%3E%3Cpath d='M 250 64 C 280 120, 306 195, 306 308 L 296 350 L 250 350 Z' fill='url(%23g)'/%3E%3Cpolygon points='256,120 226,220 252,220 240,296 274,196 248,196' fill='%23FFFFFF'/%3E%3Cpolygon points='220,360 280,360 270,394 230,394' fill='%2309090B'/%3E%3Cpath d='M 234 402 L 266 402 L 250 450 Z' fill='%23EA580C'/%3E%3Cpath d='M 242 402 L 258 402 L 250 428 Z' fill='%23FFFFFF'/%3E%3C/g%3E%3C/svg%3E">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Migration / Import Modal -->
-    <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
-                <div>
-                    <h3 class="text-sm font-semibold text-white tracking-tight">Migrate / Import Projects</h3>
-                    <p class="text-xs text-zinc-500 mt-0.5">Restore configurations, domains, and git repos from another VPS</p>
-                </div>
-                <button onclick="closeImportModal()" class="text-zinc-500 hover:text-white transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <form id="importForm" onsubmit="handleImportSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Backup JSON File</label>
-                    <input type="file" id="importFile" accept=".json,application/json" onchange="loadImportFile(this)" class="block w-full text-xs text-zinc-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-zinc-200 hover:file:bg-zinc-800 cursor-pointer border border-zinc-800 rounded-lg p-2 bg-black" />
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Or Paste JSON Content</label>
-                    <textarea id="importJsonText" rows="6" placeholder='{"version":"1.0","apps":[...]}' class="w-full bg-black border border-zinc-800 text-xs font-mono text-zinc-200 rounded-lg p-3 focus:border-zinc-500 focus:outline-none transition"></textarea>
-                </div>
-
-                <div id="importStatus" class="text-xs hidden p-3 rounded-lg border"></div>
-
-                <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-                    <button type="button" onclick="closeImportModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
-                    <button type="submit" id="importSubmitBtn" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
-                        Import & Restore
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c', // Dark orange primary
+                            700: '#c2410c', // Deep dark orange
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        }
+                    },
                     fontFamily: {
                         sans: ['Geist', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
                         mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
@@ -60,308 +41,435 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #000000;
-            color: #ededed;
-            font-family: 'Geist', -apple-system, sans-serif;
-        }
-        /* Custom scrollbar for sleek logs */
+        /* Flat, crisp custom scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #000000; }
-        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        .dark ::-webkit-scrollbar-track { background: #000000; }
+        .dark ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        ::-webkit-scrollbar-track { background: #f4f4f5; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
+        /* Crisp flat dialog transition */
+        .modal-card {
+            animation: modalIn 0.12s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.99); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-white selection:text-black">
+<body class="min-h-screen flex flex-col bg-white text-zinc-900 dark:bg-black dark:text-zinc-100 font-sans antialiased selection:bg-orange-600 selection:text-white transition-colors duration-150">
 
-    <!-- Top Navigation Bar -->
-    <header class="border-b border-zinc-800/80 bg-black/80 backdrop-blur-md sticky top-0 z-40">
+    <!-- Top Navigation Bar (Flat) -->
+    <header class="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
-                <!-- Brand Mark -->
-                <a href="/" class="flex items-center gap-2.5 text-white hover:opacity-90 transition">
-                    <svg class="w-5 h-5 fill-white" viewBox="0 0 76 65" fill="none">
-                        <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+                <!-- Clean Brand Mark with Dark Orange Accent -->
+                <a href="/" class="flex items-center gap-2.5 text-zinc-900 dark:text-white hover:opacity-90 transition">
+                    <svg class="w-6 h-6 shrink-0 rounded-md" viewBox="0 0 500 500" fill="none">
+                        <defs>
+                            <linearGradient id="navDarkOrangeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#9A3412" />
+                                <stop offset="100%" stop-color="#EA580C" />
+                            </linearGradient>
+                            <linearGradient id="navShadowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#18181B" />
+                                <stop offset="100%" stop-color="#09090B" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="500" height="500" rx="100" fill="#09090B" />
+                        <g transform="translate(250, 250) rotate(-45) translate(-250, -250)">
+                            <path d="M 250 50 C 285 110, 315 190, 315 310 L 370 360 L 300 360 L 285 410 L 215 410 L 200 360 L 130 360 L 185 310 C 185 190, 215 110, 250 50 Z" fill="#FFFFFF" />
+                            <path d="M 194 316 L 148 350 L 198 350 Z" fill="#9A3412" />
+                            <path d="M 306 316 L 352 350 L 302 350 Z" fill="url(#navDarkOrangeGrad)" />
+                            <path d="M 250 64 C 220 120, 194 195, 194 308 L 204 350 L 250 350 Z" fill="url(#navShadowGrad)" />
+                            <path d="M 250 64 C 280 120, 306 195, 306 308 L 296 350 L 250 350 Z" fill="url(#navDarkOrangeGrad)" />
+                            <polygon points="256,120 226,220 252,220 240,296 274,196 248,196" fill="#FFFFFF" />
+                            <polygon points="220,360 280,360 270,394 230,394" fill="#09090B" />
+                            <path d="M 234 402 L 266 402 L 250 450 Z" fill="#EA580C" />
+                            <path d="M 242 402 L 258 402 L 250 428 Z" fill="#FFFFFF" />
+                        </g>
                     </svg>
                     <span class="font-bold tracking-tight text-base">{{ platform_name }}</span>
-                    <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">PaaS</span>
                 </a>
-
-                <!-- Navigation Tabs -->
-                <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
-                    <a href="/" class="text-white border-b-2 border-white px-3 py-4 text-xs font-medium">Overview</a>
-                    <a href="/api/system/caddyfile" target="_blank" class="text-zinc-400 hover:text-white px-3 py-4 text-xs font-medium transition flex items-center gap-1">
-                        Caddyfile
-                        <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
-                    <a href="/api/apps" target="_blank" class="text-zinc-400 hover:text-white px-3 py-4 text-xs font-medium transition">REST API</a>
-                </nav>
             </div>
 
-            <!-- Header Actions & GitHub Profile -->
-            <div class="flex items-center gap-3">
+            <!-- Header Actions & Controls -->
+            <div class="flex items-center gap-2.5">
+                <!-- Theme Toggle Button (Light/Dark) -->
+                <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle color theme" class="p-1.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition">
+                    <!-- Sun icon (shown in dark mode) -->
+                    <svg id="themeIconSun" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <!-- Moon icon (shown in light mode) -->
+                    <svg id="themeIconMoon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+
+            
+
                 {% if current_user %}
-                <div class="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-full pl-1.5 pr-3 py-1">
-                    <img src="{{ current_user.avatar_url }}" alt="{{ current_user.login }}" class="w-5 h-5 rounded-full border border-zinc-700" />
-                    <span class="text-xs font-medium text-zinc-300">{{ current_user.login }}</span>
-                    <a href="/auth/logout" title="Sign out" class="text-zinc-500 hover:text-zinc-300 text-xs ml-1 transition">
+                <div class="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full pl-1.5 pr-3 py-1">
+                    <img src="{{ current_user.avatar_url }}" alt="{{ current_user.login }}" class="w-5 h-5 rounded-full border border-zinc-300 dark:border-zinc-700" />
+                    <span class="text-xs font-medium text-zinc-800 dark:text-zinc-200">{{ current_user.login }}</span>
+                    <a href="/auth/logout" title="Sign out" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs ml-1 transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </a>
                 </div>
-                <button onclick="openGithubModal()" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                <button onclick="openGithubModal()" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 rounded-md text-xs font-medium transition">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
                     Import Repo
                 </button>
                 {% else %}
-                <button onclick="openPatModal()" class="inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                <button onclick="openPatModal()" class="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
                     Connect GitHub
                 </button>
                 {% endif %}
 
                 <!-- Export & Import (VPS Migration) -->
-                <a href="/api/system/export" download title="Export all project configs for VPS migration" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                <a href="/api/system/export" download title="Export all project configs for migration" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
                     <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Export
                 </a>
-                <button onclick="openImportModal()" title="Import projects from backup JSON" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
+                <button onclick="openImportModal()" title="Import projects from backup JSON" class="hidden sm:inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md text-xs font-medium transition">
                     <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     Import
                 </button>
 
-                <!-- Primary Deploy Button -->
-                <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-white text-black hover:bg-zinc-200 px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-tight transition duration-150 shadow-sm">
+                <!-- Primary Deploy Button with Dark Orange Flat Styling -->
+                <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-tight transition duration-150">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                    New Project
+                    <span>New Project</span>
+                    <span class="hidden md:inline-block text-[10px] bg-orange-800/80 dark:bg-orange-700/80 font-mono text-orange-100 px-1 py-0.2 rounded font-normal">N</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
+    <!-- Main Content Area (Left Panel: Stats, Body Panel: Projects) -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
 
-        <!-- Telemetry Strip -->
-        <section class="border border-zinc-800/80 bg-zinc-950/60 rounded-xl p-4 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform RAM (RSS)</div>
-                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ platform_ram_mb }} <span class="text-xs font-normal text-zinc-500">MB</span></div>
-                <div class="text-[11px] text-zinc-500 mt-0.5">Idle footprint</div>
-            </div>
-            <div>
-                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Binary Size</div>
-                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ binary_size_mb }} <span class="text-xs font-normal text-zinc-500">MB</span></div>
-                <div class="text-[11px] text-zinc-500 mt-0.5">Single binary</div>
-            </div>
-            <div>
-                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Running Apps</div>
-                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ running_apps }} <span class="text-xs font-normal text-zinc-500">/ {{ total_apps }}</span></div>
-                <div class="text-[11px] text-zinc-500 mt-0.5">Linux processes</div>
-            </div>
-            <div>
-                <div class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform Uptime</div>
-                <div class="text-xl font-semibold text-white tracking-tight mt-0.5">{{ uptime_formatted }}</div>
-                <div class="text-[11px] text-zinc-500 mt-0.5">Embedded SQLite</div>
-            </div>
-        </section>
+            <!-- Left Panel: Statistics & System Overview -->
+            <aside class="w-full md:w-64 lg:w-72 shrink-0 space-y-4 md:sticky md:top-20">
+                <!-- Stats Box -->
+                <div class="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-xl p-5 space-y-4">
+                   
 
-        <!-- Projects Header & Live Filter -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-            <div>
-                <h1 class="text-lg font-semibold text-white tracking-tight">Projects</h1>
-                <p class="text-xs text-zinc-400 mt-0.5">Hosted applications with automated builds, monitoring, and domains.</p>
-            </div>
-            <div class="relative w-full sm:w-64">
-                <input 
-                    type="text" 
-                    id="projectSearch" 
-                    placeholder="Search projects..." 
-                    oninput="filterProjectCards()"
-                    class="w-full bg-zinc-950 border border-zinc-800 text-xs text-white rounded-lg pl-8 pr-3 py-1.5 focus:border-zinc-500 focus:outline-none transition placeholder:text-zinc-600"
-                />
-                <svg class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Projects List -->
-        {% if apps %}
-        <div class="grid grid-cols-1 gap-3.5" id="projectsContainer">
-            {% for app in apps %}
-            <div class="project-card border border-zinc-800/80 bg-zinc-950/70 hover:border-zinc-700 hover:bg-zinc-900/30 rounded-xl p-5 transition duration-150" data-name="{{ app.name | lower }}" data-domain="{{ app.domain | default('') | lower }}">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    
-                    <!-- App Info -->
-                    <div class="space-y-1.5 flex-1 min-w-0">
-                        <div class="flex items-center gap-2.5 flex-wrap">
-                            <span class="text-base font-semibold text-white tracking-tight truncate">{{ app.name }}</span>
-                            <span class="text-[11px] font-mono text-zinc-500 bg-zinc-900/80 border border-zinc-800/80 px-2 py-0.5 rounded">{{ app.id }}</span>
-                            
-                            <!-- Custom Domain Pill -->
-                            {% if app.domain %}
-                            <a href="http://{{ app.domain }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-mono text-blue-400 hover:text-blue-300 bg-blue-950/30 border border-blue-900/40 px-2.5 py-0.5 rounded-full transition">
-                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                {{ app.domain }}
-                                <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                            </a>
-                            {% endif %}
-                        </div>
-
-                        <!-- Secondary Meta: Git or Command + Health -->
-                        <div class="flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
-                            {% if app.has_git %}
-                            <div class="inline-flex items-center gap-1.5 text-zinc-300">
-                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
-                                <span>branch: <strong class="text-zinc-200 font-medium">{{ app.git_branch | default('main') }}</strong></span>
-                                {% if app.git_commit_short %}
-                                <span class="text-zinc-500 font-mono">@ {{ app.git_commit_short }}</span>
-                                {% endif %}
+                    <div class="space-y-4">
+                        <!-- RAM Usage -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">RAM Usage</span>
+                                <span class="text-[10px] text-zinc-400 font-mono">RSS</span>
                             </div>
-                            <span class="text-zinc-600">•</span>
-                            {% endif %}
-
-                            <code class="text-zinc-400 font-mono text-[11px] bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800/60 max-w-xs truncate" title="{{ app.command }}">{{ app.command }}</code>
-
-                            {% if app.port %}
-                            <span class="text-zinc-600">•</span>
-                            <span class="text-zinc-400 font-mono text-[11px]">port {{ app.port }}</span>
-                            {% endif %}
-
-                            {% if app.ram_mb %}
-                            <span class="text-zinc-600">•</span>
-                            <span class="text-zinc-300 font-mono text-[11px]">{{ app.ram_mb }} MB</span>
-                            {% endif %}
-
-                            {% if app.uptime_formatted %}
-                            <span class="text-zinc-600">•</span>
-                            <span class="text-zinc-400 text-[11px]">up {{ app.uptime_formatted }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Status Indicator & Actions -->
-                    <div class="flex items-center gap-3 self-end md:self-center">
-                        
-                        <!-- Status Pill with Pulsating Indicator -->
-                        {% if app.is_building %}
-                        <div class="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-950/30 border border-amber-900/40 px-2.5 py-1 rounded-full">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-                            <span>Building</span>
-                        </div>
-                        {% elif app.is_running %}
-                        <div class="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 px-2.5 py-1 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            <span>Running</span>
-                        </div>
-                        {% elif app.status == "crashed" %}
-                        <div class="flex items-center gap-1.5 text-xs text-rose-400 bg-rose-950/30 border border-rose-900/40 px-2.5 py-1 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                            <span>Crashed</span>
-                        </div>
-                        {% else %}
-                        <div class="flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-                            <span>Stopped</span>
-                        </div>
-                        {% endif %}
-
-                        <!-- Actions Buttons -->
-                        <div class="flex items-center gap-1.5">
-                            {% if app.has_git %}
-                            <button onclick="redeployApp('{{ app.id }}')" title="Rebuild & deploy latest commit" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
-                                Redeploy
-                            </button>
-                            {% endif %}
-
-                            {% if app.is_running %}
-                            <button onclick="appAction('{{ app.id }}', 'restart')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
-                                Restart
-                            </button>
-                            <button onclick="appAction('{{ app.id }}', 'stop')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-800 px-2.5 py-1 rounded-md transition">
-                                Stop
-                            </button>
-                            {% else %}
-                            <button onclick="appAction('{{ app.id }}', 'start')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-emerald-400 border border-zinc-800 px-2.5 py-1 rounded-md transition">
-                                Start
-                            </button>
-                            {% endif %}
-
-                            <button onclick="viewLogs('{{ app.id }}', '{{ app.name }}')" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1 rounded-md transition">
-                                Logs
-                            </button>
-
-                            <button onclick="deleteApp('{{ app.id }}')" title="Delete application" class="text-xs text-zinc-600 hover:text-rose-400 p-1.5 rounded-md hover:bg-rose-950/20 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            <div class="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                                {{ apps_ram_mb }} <span class="text-xs font-normal text-zinc-500 font-mono">MB</span>
+                            </div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">Running applications</div>
                         </div>
 
+                        <!-- Running Apps -->
+                        <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800/80">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Running Apps</span>
+                                <span class="text-[10px] text-orange-700 dark:text-orange-400 font-mono font-semibold">{{ running_apps }} active</span>
+                            </div>
+                            <div class="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                                {{ running_apps }} <span class="text-xs font-normal text-zinc-500 font-mono">/ {{ total_apps }}</span>
+                            </div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">Supervised processes</div>
+                        </div>
+
+                        <!-- Platform Uptime -->
+                        <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800/80">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">Platform Uptime</span>
+                                <span class="text-[10px] text-zinc-400 font-mono">engine</span>
+                            </div>
+                            <div class="text-xl font-bold text-zinc-900 dark:text-white tracking-tight mt-0.5">{{ uptime_formatted }}</div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">Current session</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <!-- Empty State (Clean Minimalist Box) -->
-        <div class="border border-dashed border-zinc-800 rounded-xl p-12 text-center bg-zinc-950/30">
-            <svg class="w-10 h-10 text-zinc-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-            </svg>
-            <h3 class="text-sm font-semibold text-white">No projects yet</h3>
-            <p class="text-xs text-zinc-500 max-w-sm mx-auto mt-1 mb-4">Deploy an existing Git repository or execute any binary on the host with automatic routing.</p>
-            <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-white text-black hover:bg-zinc-200 px-4 py-2 rounded-md text-xs font-semibold transition">
-                + Deploy Your First Project
-            </button>
-        </div>
-        {% endif %}
 
+                <!-- Backup & Migration Panel -->
+                <div class="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-mono">Migration</span>
+                        <span class="text-[10px] text-zinc-400 font-mono">JSON</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 leading-relaxed">Export or restore project configs, domains, and environment settings across VPS servers.</p>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <a href="/api/system/export" download class="text-center bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 py-1.5 rounded-md text-xs font-medium transition">
+                            Export
+                        </a>
+                        <button onclick="openImportModal()" class="text-center bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 py-1.5 rounded-md text-xs font-medium transition">
+                            Import
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Body Panel: Projects Area -->
+            <section class="flex-1 min-w-0 w-full space-y-4">
+                <!-- Projects Header & Live Filters -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+                    <div>
+                        <h1 class="text-lg font-semibold text-zinc-900 dark:text-white tracking-tight">Projects</h1>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Applications supervised with automated builds, monitoring, and domains.</p>
+                    </div>
+
+                    <!-- Controls: Filter Tabs & Search Bar -->
+                    <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                        <!-- Status Filter Tabs with Dark Orange Active Tab -->
+                        <div class="inline-flex bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg p-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            <button onclick="setStatusFilter('all')" id="filterTab-all" class="px-2.5 py-1 rounded-md text-white bg-orange-700 dark:bg-orange-600 font-semibold transition">
+                                All ({{ total_apps }})
+                            </button>
+                            <button onclick="setStatusFilter('running')" id="filterTab-running" class="px-2.5 py-1 rounded-md hover:text-zinc-900 dark:hover:text-white transition">
+                                Running ({{ running_apps }})
+                            </button>
+                            <button onclick="setStatusFilter('stopped')" id="filterTab-stopped" class="px-2.5 py-1 rounded-md hover:text-zinc-900 dark:hover:text-white transition">
+                                Stopped
+                            </button>
+                        </div>
+
+                        <!-- Search Input with Keyboard Shortcut Badge -->
+                        <div class="relative flex-1 sm:w-48">
+                            <input 
+                                type="text" 
+                                id="projectSearch" 
+                                placeholder="Search..." 
+                                oninput="filterProjectCards()"
+                                class="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg pl-8 pr-7 py-1.5 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-normal"
+                            />
+                            <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <kbd class="hidden sm:inline-block absolute right-2 top-2 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-1 py-0.2 rounded select-none">/</kbd>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects List (Flat Cards) -->
+                {% if apps %}
+                <div class="grid grid-cols-1 gap-3.5" id="projectsContainer">
+                    {% for app in apps %}
+                    <div class="project-card border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-orange-600/60 dark:hover:border-orange-500/60 rounded-xl p-5 transition duration-150" 
+                         data-id="{{ app.id }}" 
+                         data-name="{{ app.name | lower }}" 
+                         data-domain="{{ app.domain | default('') | lower }}" 
+                         data-status="{{ app.status }}">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            
+                            <!-- App Info -->
+                            <div class="space-y-1.5 flex-1 min-w-0">
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <button onclick="inspectApp('{{ app.id }}')" class="text-base font-semibold text-zinc-900 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 tracking-tight text-left transition truncate">
+                                        {{ app.name }}
+                                    </button>
+                                    <span onclick="copyText('{{ app.id }}', 'App ID copied')" title="Click to copy ID" class="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded cursor-pointer hover:border-orange-500 transition">
+                                        {{ app.id }}
+                                    </span>
+                                    
+                                    <!-- Custom Domain Pill -->
+                                    {% if app.domain %}
+                                    <a href="http://{{ app.domain }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-mono text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 px-2.5 py-0.5 rounded-full transition">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-orange-600 dark:bg-orange-400"></span>
+                                        {{ app.domain }}
+                                        <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Health Indicator Pill -->
+                                    {% if app.health_status == "healthy" %}
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-2 py-0.5 rounded-full" title="Health check passing">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
+                                        healthy
+                                    </span>
+                                    {% elif app.health_status == "degraded" or app.health_status == "unhealthy" %}
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-mono text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 px-2 py-0.5 rounded-full" title="{{ app.health_detail | default('Health check failing') }}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400"></span>
+                                        {{ app.health_status }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Secondary Meta: Git or Command + Health + Port -->
+                                <div class="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap">
+                                    {% if app.has_git %}
+                                    <div class="inline-flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                                        <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+                                        <span>branch: <strong class="text-zinc-900 dark:text-zinc-200 font-medium">{{ app.git_branch | default('main') }}</strong></span>
+                                        {% if app.git_commit_short %}
+                                        <span class="text-zinc-400 dark:text-zinc-500 font-mono">@ {{ app.git_commit_short }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-zinc-300 dark:text-zinc-700">&bull;</span>
+                                    {% endif %}
+
+                                    <code class="text-zinc-600 dark:text-zinc-400 font-mono text-[11px] bg-zinc-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 max-w-xs truncate" title="{{ app.command }}">{{ app.command }}</code>
+
+                                    {% if app.port %}
+                                    <span class="text-zinc-300 dark:text-zinc-700">&bull;</span>
+                                    <span class="text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">port {{ app.port }}</span>
+                                    {% endif %}
+
+                                    {% if app.ram_mb %}
+                                    <span class="text-zinc-300 dark:text-zinc-700">&bull;</span>
+                                    <span class="text-zinc-700 dark:text-zinc-300 font-mono text-[11px]">{{ app.ram_mb }} MB</span>
+                                    {% endif %}
+
+                                    {% if app.uptime_formatted %}
+                                    <span class="text-zinc-300 dark:text-zinc-700">&bull;</span>
+                                    <span class="text-zinc-500 dark:text-zinc-400 text-[11px]">up {{ app.uptime_formatted }}</span>
+                                    {% endif %}
+
+                                    {% if app.restart_count > 0 %}
+                                    <span class="text-zinc-300 dark:text-zinc-700">&bull;</span>
+                                    <span class="text-amber-600 dark:text-amber-400 text-[11px]">{{ app.restart_count }} restart{% if app.restart_count > 1 %}s{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Status Indicator & Actions -->
+                            <div class="flex items-center gap-2.5 self-end md:self-center">
+                                
+                                <!-- Status Pill -->
+                                {% if app.is_building %}
+                                <div class="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-2.5 py-1 rounded-full">
+                                    <span class="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-400"></span>
+                                    <span>Building</span>
+                                </div>
+                                {% elif app.is_running %}
+                                <div class="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-2.5 py-1 rounded-full" title="{{ app.status_label }}">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
+                                    <span>Running</span>
+                                </div>
+                                {% elif app.status == "crashed" %}
+                                <div class="flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 px-2.5 py-1 rounded-full" title="{{ app.status_label }}">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400"></span>
+                                    <span>Crashed</span>
+                                </div>
+                                {% else %}
+                                <div class="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500"></span>
+                                    <span>Stopped</span>
+                                </div>
+                                {% endif %}
+
+                                <!-- Action Buttons (Flat) -->
+                                <div class="flex items-center gap-1.5">
+                                    {% if app.has_git %}
+                                    <button onclick="redeployApp('{{ app.id }}')" title="Pull latest commit & rebuild" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                        Redeploy
+                                    </button>
+                                    {% endif %}
+
+                                    {% if app.is_running %}
+                                    <button onclick="appAction('{{ app.id }}', 'restart')" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                        Restart
+                                    </button>
+                                    <button onclick="appAction('{{ app.id }}', 'stop')" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                        Stop
+                                    </button>
+                                    {% else %}
+                                    <button onclick="appAction('{{ app.id }}', 'start')" class="text-xs bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white px-2.5 py-1 rounded-md font-medium transition">
+                                        Start
+                                    </button>
+                                    {% endif %}
+
+                                    <button onclick="viewLogs('{{ app.id }}', '{{ app.name }}')" title="View process output" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md transition">
+                                        Logs
+                                    </button>
+
+                                    <button onclick="inspectApp('{{ app.id }}')" title="Inspect configuration & environment variables" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 p-1.5 rounded-md transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    </button>
+
+                                    <button onclick="deleteApp('{{ app.id }}')" title="Delete project" class="text-xs text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Empty State -->
+                <div class="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-12 text-center bg-zinc-50 dark:bg-zinc-950">
+                    <svg class="w-10 h-10 text-zinc-400 dark:text-zinc-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">No projects yet</h3>
+                    <p class="text-xs text-zinc-500 max-w-sm mx-auto mt-1 mb-4">Deploy an existing Git repository or execute any binary on the host with automatic routing.</p>
+                    <button onclick="openDeployModal()" class="inline-flex items-center gap-1.5 bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white px-4 py-2 rounded-md text-xs font-semibold transition">
+                        + Deploy Your First Project
+                    </button>
+                </div>
+                {% endif %}
+            </section>
+        </div>
     </main>
 
-    <!-- Deploy Modal -->
-    <div id="deployModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
-                <h3 class="text-sm font-semibold text-white tracking-tight">Deploy New Project</h3>
-                <button onclick="closeDeployModal()" class="text-zinc-500 hover:text-white transition">
+    <!-- Deploy Modal (Flat) -->
+    <div id="deployModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative modal-card max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div>
+                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">Deploy New Project</h3>
+                    <p class="text-xs text-zinc-500 mt-0.5">Automated detection for Rust, Node, Python, Go, or custom binaries</p>
+                </div>
+                <button onclick="closeDeployModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
             <!-- Mode Selector Tabs -->
-            <div class="flex border-b border-zinc-800 mb-5">
-                <button type="button" id="tabGit" onclick="switchDeployTab('git')" class="text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white">GitHub / Git Repo</button>
-                <button type="button" id="tabExec" onclick="switchDeployTab('exec')" class="text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white">Custom Executable</button>
+            <div class="flex border-b border-zinc-200 dark:border-zinc-800 mb-5">
+                <button type="button" id="tabGit" onclick="switchDeployTab('git')" class="text-xs font-semibold pb-2.5 px-3 border-b-2 border-orange-700 dark:border-orange-500 text-orange-700 dark:text-orange-400">GitHub / Git Repo</button>
+                <button type="button" id="tabExec" onclick="switchDeployTab('exec')" class="text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">Custom Executable</button>
             </div>
 
             <form id="deployForm" onsubmit="handleDeploy(event)" class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Project Name *</label>
-                        <input type="text" id="appName" required placeholder="my-app" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Project Name *</label>
+                        <input type="text" id="appName" required placeholder="my-api" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition" />
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Custom Domain (Optional)</label>
-                        <input type="text" id="appDomain" placeholder="api.example.com" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Custom Domain (Optional)</label>
+                        <input type="text" id="appDomain" placeholder="api.example.com" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition" />
                     </div>
                 </div>
 
                 <!-- Git Fields -->
                 <div id="gitSection" class="space-y-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Repository URL *</label>
-                        <input type="text" id="gitRepo" placeholder="https://github.com/user/repo.git" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Repository URL *</label>
+                        <input type="text" id="gitRepo" placeholder="https://github.com/user/repo.git" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-zinc-400 mb-1">Branch</label>
-                            <input type="text" id="gitBranch" value="main" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Branch</label>
+                            <input type="text" id="gitBranch" value="main" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition" />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-zinc-400 mb-1">Restart Policy</label>
-                            <select id="restartPolicy" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition">
-                                <option value="on_failure">On Failure</option>
-                                <option value="always">Always</option>
-                                <option value="never">Never</option>
-                            </select>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Custom Port (Optional)</label>
+                            <input type="number" id="gitPort" placeholder="Auto-assigned" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Build Command (Optional)</label>
+                            <input type="text" id="gitBuildCmd" placeholder="e.g. cargo build --release" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Run Command (Optional)</label>
+                            <input type="text" id="gitRunCmd" placeholder="e.g. ./target/release/server" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
                         </div>
                     </div>
                 </div>
@@ -369,124 +477,228 @@
                 <!-- Executable Fields (hidden by default) -->
                 <div id="execSection" class="space-y-3 hidden">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Executable Command *</label>
-                        <input type="text" id="appExec" placeholder="./target/release/server or node index.js" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Executable Command *</label>
+                        <input type="text" id="appExec" placeholder="./target/release/server or node index.js" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Arguments</label>
+                            <input type="text" id="appArgs" placeholder="-p 8080 --production" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Port (Optional)</label>
+                            <input type="number" id="execPort" placeholder="Auto-assigned" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Configuration Section -->
+                <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleAdvancedSettings()">
+                        <span class="text-xs font-medium text-zinc-800 dark:text-zinc-300">Environment Variables & Advanced Settings</span>
+                        <span id="advToggleIcon" class="text-orange-700 dark:text-orange-400 text-xs font-mono font-bold">+</span>
+                    </div>
+
+                    <div id="advSection" class="space-y-3 hidden">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Restart Policy</label>
+                                <select id="restartPolicy" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition">
+                                    <option value="on_failure">On Failure (Recommended)</option>
+                                    <option value="always">Always</option>
+                                    <option value="never">Never</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Health Check URL</label>
+                                <input type="text" id="healthCheckUrl" placeholder="/health or http://localhost:8080/" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400">Environment Variables</label>
+                                <span class="text-[10px] text-zinc-400 font-mono">KEY=VALUE (one per line)</span>
+                            </div>
+                            <textarea id="appEnvVars" rows="4" placeholder="PORT=3000&#10;DATABASE_URL=postgres://user:pass@host/db&#10;NODE_ENV=production" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-200 font-mono rounded-lg p-2.5 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <button type="button" onclick="closeDeployModal()" class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-3 py-2 rounded-md transition">Cancel</button>
+                    <button type="submit" id="deploySubmitBtn" class="bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
+                        Deploy Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Details / Inspect Modal (Flat) -->
+    <div id="appDetailsModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-2xl w-full p-6 shadow-2xl relative modal-card max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="inspectAppName" class="text-base font-semibold text-zinc-900 dark:text-white tracking-tight">Project Details</h3>
+                        <span id="inspectAppStatusPill"></span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span id="inspectAppId" class="text-xs font-mono text-zinc-500 dark:text-zinc-400"></span>
+                        <button onclick="copyInspectAppId()" class="text-[11px] text-orange-700 dark:text-orange-400 hover:underline font-mono transition">Copy ID</button>
+                    </div>
+                </div>
+                <button onclick="closeInspectModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-5">
+                <!-- Metadata Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3.5">
+                    <div>
+                        <span class="text-zinc-500 block text-[11px]">Domain</span>
+                        <span id="inspectDomain" class="font-mono text-zinc-900 dark:text-zinc-200 font-medium">None</span>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Arguments</label>
-                        <input type="text" id="appArgs" placeholder="-p 8080" class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition" />
+                        <span class="text-zinc-500 block text-[11px]">Internal Port</span>
+                        <span id="inspectPort" class="font-mono text-zinc-900 dark:text-zinc-200 font-medium">Auto</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block text-[11px]">Restart Policy</span>
+                        <span id="inspectPolicy" class="text-zinc-900 dark:text-zinc-200 font-medium">On Failure</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block text-[11px]">Health Status</span>
+                        <span id="inspectHealth" class="text-zinc-900 dark:text-zinc-200 font-medium font-mono">Unknown</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block text-[11px]">Uptime</span>
+                        <span id="inspectUptime" class="text-zinc-900 dark:text-zinc-200 font-medium">-</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-500 block text-[11px]">RAM UsageUsage</span>
+                        <span id="inspectRam" class="text-zinc-900 dark:text-zinc-200 font-medium font-mono">-</span>
                     </div>
                 </div>
 
-                <div class="pt-3 flex justify-end gap-2 border-t border-zinc-800/80">
-                    <button type="button" onclick="closeDeployModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 rounded-md transition">Cancel</button>
-                    <button type="submit" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition">Deploy Project</button>
+                <!-- Command / Repo Details -->
+                <div class="border border-zinc-200 dark:border-zinc-800 rounded-lg p-3.5 bg-zinc-50 dark:bg-zinc-900/50 space-y-2 text-xs">
+                    <span class="text-zinc-700 dark:text-zinc-400 font-medium block">Execution Command</span>
+                    <pre id="inspectCommand" class="font-mono text-zinc-800 dark:text-zinc-300 bg-white dark:bg-black p-2.5 rounded border border-zinc-200 dark:border-zinc-800 text-[11px] overflow-x-auto whitespace-pre-wrap"></pre>
+
+                    <div id="inspectGitSection" class="hidden pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1">
+                        <span class="text-zinc-700 dark:text-zinc-400 font-medium block">Git Repository</span>
+                        <div class="flex items-center justify-between text-zinc-800 dark:text-zinc-300 font-mono text-[11px]">
+                            <span id="inspectGitRepo" class="truncate max-w-sm"></span>
+                            <span id="inspectGitBranch" class="text-zinc-500"></span>
+                        </div>
+                    </div>
                 </div>
-            </form>
+
+                <!-- Environment Variables -->
+                <div class="border border-zinc-200 dark:border-zinc-800 rounded-lg p-3.5 bg-zinc-50 dark:bg-zinc-900/50 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-800 dark:text-zinc-300 font-medium">Environment Variables</span>
+                        <button onclick="toggleEnvMask()" id="toggleMaskBtn" class="text-[11px] font-mono text-orange-700 dark:text-orange-400 hover:underline transition">Show Values</button>
+                    </div>
+                    <div id="inspectEnvList" class="space-y-1 max-h-40 overflow-y-auto font-mono text-[11px]"></div>
+                </div>
+
+                <!-- Direct Proxy Routing Snippet -->
+                <div class="border border-zinc-200 dark:border-zinc-800 rounded-lg p-3.5 bg-zinc-50 dark:bg-zinc-900/50 space-y-1.5 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-700 dark:text-zinc-400 font-medium">Direct Proxy Routing Test</span>
+                        <button onclick="copyProxyCurl()" class="text-[11px] font-mono text-orange-700 dark:text-orange-400 hover:underline transition">Copy cURL</button>
+                    </div>
+                    <pre id="inspectCurlSnippet" class="font-mono text-zinc-700 dark:text-zinc-400 bg-white dark:bg-black p-2 rounded border border-zinc-200 dark:border-zinc-800 text-[11px] overflow-x-auto whitespace-pre"></pre>
+                </div>
+
+                <!-- Action Controls inside Modal -->
+                <div class="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <button onclick="deleteInspectedApp()" class="text-xs text-rose-600 dark:text-rose-400 hover:underline transition">Delete Application</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="viewLogs(currentInspectAppId, currentInspectAppName)" class="text-xs bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md transition">View Logs</button>
+                        <button onclick="toggleInspectAppRunState()" id="inspectToggleBtn" class="text-xs bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white px-3.5 py-1.5 rounded-md font-semibold transition">Restart</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- GitHub Repos Modal -->
-    <div id="githubModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-xl w-full p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
-                <h3 class="text-sm font-semibold text-white tracking-tight">Select a Repository</h3>
-                <button onclick="closeGithubModal()" class="text-zinc-500 hover:text-white transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <input 
-                type="text" 
-                id="repoSearch" 
-                placeholder="Search repositories..." 
-                oninput="filterRepoList()"
-                class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 mb-3 focus:border-zinc-500 focus:outline-none transition"
-            />
-            <div id="repoList" class="max-h-80 overflow-y-auto space-y-2 pr-1 text-xs text-zinc-400">
-                Loading repositories...
-            </div>
-        </div>
-    </div>
-
-    <!-- PAT Modal -->
-    <div id="patModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                <h3 class="text-sm font-semibold text-white tracking-tight">Connect with GitHub</h3>
-                <button onclick="closePatModal()" class="text-zinc-500 hover:text-white transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <p class="text-xs text-zinc-400 mb-4">Paste a GitHub Personal Access Token (PAT) with <code class="text-zinc-300">repo</code> & <code class="text-zinc-300">read:user</code> scopes to browse and deploy repositories directly.</p>
-            <form onsubmit="submitPat(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Personal Access Token</label>
-                    <input type="password" id="patInput" required placeholder="ghp_..." class="w-full bg-zinc-900 border border-zinc-800 text-xs text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none transition font-mono" />
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closePatModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
-                    <button type="submit" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition">Connect</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Terminal Log Console Modal -->
-    <div id="logsModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-black border border-zinc-800 rounded-xl max-w-3xl w-full p-5 shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800/80">
+    <!-- Terminal Log Console Modal (Always Pure Black Flat Terminal) -->
+    <div id="logsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-black border border-zinc-800 rounded-xl max-w-3xl w-full p-5 shadow-2xl flex flex-col max-h-[85vh] modal-card">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-zinc-800 gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <h3 id="logsTitle" class="text-xs font-mono font-medium text-white tracking-tight">Deployment Console</h3>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h3 id="logsTitle" class="text-xs font-mono font-medium text-white tracking-tight">Console Output</h3>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="copyLogs()" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 transition">Copy Logs</button>
-                    <button onclick="refreshCurrentLogs()" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 transition">Refresh</button>
-                    <button onclick="closeLogsModal()" class="text-zinc-500 hover:text-white transition p-1">
+
+                <!-- Stream Filter Pills & Controls -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <div class="inline-flex bg-zinc-950 border border-zinc-800 rounded p-0.5 text-[10px] font-mono">
+                        <button onclick="setLogStreamFilter('all')" id="logFilter-all" class="px-2 py-0.5 rounded text-white bg-orange-600 font-semibold transition">All</button>
+                        <button onclick="setLogStreamFilter('stdout')" id="logFilter-stdout" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition">stdout</button>
+                        <button onclick="setLogStreamFilter('stderr')" id="logFilter-stderr" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition">stderr</button>
+                        <button onclick="setLogStreamFilter('build')" id="logFilter-build" class="px-2 py-0.5 rounded text-zinc-400 hover:text-white transition">build</button>
+                    </div>
+
+                    <label class="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 cursor-pointer ml-1">
+                        <input type="checkbox" id="autoScrollCheck" checked class="rounded bg-zinc-900 border-zinc-800 text-orange-600 focus:ring-0">
+                        <span>Auto-scroll</span>
+                    </label>
+
+                    <button onclick="downloadLogs()" title="Download raw logs text file" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2 py-1 rounded border border-zinc-800 transition">Save</button>
+                    <button onclick="copyLogs()" title="Copy to clipboard" class="text-[11px] font-mono text-zinc-400 hover:text-white bg-zinc-900 px-2 py-1 rounded border border-zinc-800 transition">Copy</button>
+                    <button onclick="closeLogsModal()" class="text-zinc-500 hover:text-white transition p-1 ml-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
+
             <!-- Monospace Terminal Screen -->
-            <div id="logContent" class="flex-1 overflow-y-auto bg-black font-mono text-xs text-zinc-300 p-3 rounded-lg border border-zinc-900 leading-relaxed whitespace-pre-wrap break-all min-h-[300px]">
+            <div id="logContent" class="flex-1 overflow-y-auto bg-black font-mono text-xs text-zinc-300 p-3.5 rounded-lg border border-zinc-900 leading-relaxed whitespace-pre-wrap break-all min-h-[340px]">
                 Loading output...
             </div>
-            <div class="pt-2 text-[11px] text-zinc-600 font-mono flex justify-between">
-                <span>Streaming live logs & exit status</span>
+
+            <div class="pt-2 text-[11px] text-zinc-500 font-mono flex justify-between">
+                <span>Polling live logs &middot; 1.5s interval</span>
                 <span>Press Esc to close</span>
             </div>
         </div>
     </div>
 
-    <!-- Migration / Import Modal -->
-    <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
+    <!-- Migration / Import Modal (Flat) -->
+    <div id="importModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative modal-card">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div>
-                    <h3 class="text-sm font-semibold text-white tracking-tight">Migrate / Import Projects</h3>
+                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">Migrate / Import Projects</h3>
                     <p class="text-xs text-zinc-500 mt-0.5">Restore configurations, domains, and git repos from another VPS</p>
                 </div>
-                <button onclick="closeImportModal()" class="text-zinc-500 hover:text-white transition">
+                <button onclick="closeImportModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
             <form id="importForm" onsubmit="handleImportSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Backup JSON File</label>
-                    <input type="file" id="importFile" accept=".json,application/json" onchange="loadImportFile(this)" class="block w-full text-xs text-zinc-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-zinc-200 hover:file:bg-zinc-800 cursor-pointer border border-zinc-800 rounded-lg p-2 bg-black" />
+                    <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Backup JSON File</label>
+                    <input type="file" id="importFile" accept=".json,application/json" onchange="loadImportFile(this)" class="block w-full text-xs text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-100 dark:file:bg-zinc-900 file:text-zinc-800 dark:file:text-zinc-200 hover:file:bg-zinc-200 dark:hover:file:bg-zinc-800 cursor-pointer border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 bg-zinc-50 dark:bg-black" />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Or Paste JSON Content</label>
-                    <textarea id="importJsonText" rows="6" placeholder='{"version":"1.0","apps":[...]}' class="w-full bg-black border border-zinc-800 text-xs font-mono text-zinc-200 rounded-lg p-3 focus:border-zinc-500 focus:outline-none transition"></textarea>
+                    <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Or Paste JSON Content</label>
+                    <textarea id="importJsonText" rows="6" placeholder='{"version":"1.0","apps":[...]}' class="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 text-xs font-mono text-zinc-900 dark:text-zinc-200 rounded-lg p-3 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition"></textarea>
                 </div>
 
                 <div id="importStatus" class="text-xs hidden p-3 rounded-lg border"></div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-                    <button type="button" onclick="closeImportModal()" class="text-xs text-zinc-400 hover:text-white px-3 py-2 transition">Cancel</button>
-                    <button type="submit" id="importSubmitBtn" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
+                <div class="flex justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <button type="button" onclick="closeImportModal()" class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-3 py-2 transition">Cancel</button>
+                    <button type="submit" id="importSubmitBtn" class="bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white text-xs font-semibold px-4 py-2 rounded-md transition flex items-center gap-1.5">
                         Import & Restore
                     </button>
                 </div>
@@ -494,19 +706,594 @@
         </div>
     </div>
 
+    <!-- GitHub Repos Modal (Flat) -->
+    <div id="githubModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-xl w-full p-6 shadow-2xl relative modal-card">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-200 dark:border-zinc-800">
+                <h3 class="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">Select a Repository</h3>
+                <button onclick="closeGithubModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <input
+                type="text"
+                id="repoSearch"
+                placeholder="Search repositories..."
+                oninput="filterRepoList()"
+                class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 mb-3 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition"
+            />
+            <div id="repoList" class="max-h-80 overflow-y-auto space-y-2 pr-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Loading repositories...
+            </div>
+        </div>
+    </div>
+
+    <!-- PAT Modal (Flat) -->
+    <div id="patModal" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl relative modal-card">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-800">
+                <h3 class="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">Connect with GitHub</h3>
+                <button onclick="closePatModal()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Paste a GitHub Personal Access Token (PAT) with <code class="text-orange-700 dark:text-orange-400 font-mono">repo</code> & <code class="text-orange-700 dark:text-orange-400 font-mono">read:user</code> scopes to browse and deploy repositories directly.</p>
+            <form onsubmit="submitPat(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-400 mb-1">Personal Access Token</label>
+                    <input type="password" id="patInput" required placeholder="ghp_..." class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-white rounded-lg px-3 py-2 focus:border-orange-600 dark:focus:border-orange-500 focus:outline-none transition font-mono" />
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePatModal()" class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-3 py-2 transition">Cancel</button>
+                    <button type="submit" class="bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white text-xs font-semibold px-4 py-2 rounded-md transition">Connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modern Toast Container (Flat) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
+
     <script>
+        // Theme initialization and toggle
+        function initTheme() {
+            const savedTheme = localStorage.getItem('launchlite_theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        }
+        initTheme();
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('launchlite_theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('launchlite_theme', 'dark');
+            }
+        }
+
+        // State variables
         let currentLogAppId = null;
+        let currentLogAppName = '';
+        let rawLogLines = [];
+        let logStreamFilter = 'all';
+        let logPollingInterval = null;
         let allRepos = [];
         let activeDeployTab = 'git';
+        let currentStatusFilter = 'all';
+        let currentInspectAppId = null;
+        let currentInspectAppName = '';
+        let currentInspectAppRunning = false;
+        let maskEnvValues = true;
+        let cachedAppInfo = null;
 
-        function openDeployModal() { document.getElementById('deployModal').classList.remove('hidden'); }
+        // Modal Open / Close
+        function openDeployModal() { document.getElementById('deployModal').classList.remove('hidden'); document.getElementById('appName').focus(); }
         function closeDeployModal() { document.getElementById('deployModal').classList.add('hidden'); }
-        function openPatModal() { document.getElementById('patModal').classList.remove('hidden'); }
+        function openPatModal() { document.getElementById('patModal').classList.remove('hidden'); document.getElementById('patInput').focus(); }
         function closePatModal() { document.getElementById('patModal').classList.add('hidden'); }
         function closeGithubModal() { document.getElementById('githubModal').classList.add('hidden'); }
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('importStatus').classList.add('hidden'); }
         function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
+        function closeInspectModal() { document.getElementById('appDetailsModal').classList.add('hidden'); currentInspectAppId = null; }
 
+        function toggleAdvancedSettings() {
+            const adv = document.getElementById('advSection');
+            const icon = document.getElementById('advToggleIcon');
+            if (adv.classList.contains('hidden')) {
+                adv.classList.remove('hidden');
+                icon.innerText = '−';
+            } else {
+                adv.classList.add('hidden');
+                icon.innerText = '+';
+            }
+        }
+
+        // Toast Notification System (Flat)
+        function showToast(message, type = 'info', duration = 3500) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let borderStyle = 'border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-200';
+            let dotColor = 'bg-orange-600';
+            if (type === 'success') {
+                borderStyle = 'border-emerald-300 dark:border-emerald-800/80 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100';
+                dotColor = 'bg-emerald-500';
+            } else if (type === 'error') {
+                borderStyle = 'border-rose-300 dark:border-rose-800/80 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100';
+                dotColor = 'bg-rose-500';
+            } else if (type === 'warning') {
+                borderStyle = 'border-amber-300 dark:border-amber-800/80 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100';
+                dotColor = 'bg-amber-500';
+            }
+
+            toast.className = `pointer-events-auto border ${borderStyle} p-3 rounded-lg shadow-xl flex items-center gap-2.5 text-xs font-medium transition-all duration-150 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `
+                <span class="w-2 h-2 rounded-full ${dotColor} shrink-0"></span>
+                <span class="flex-1">${escapeHtml(message)}</span>
+                <button onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition shrink-0">&times;</button>
+            `;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-1');
+                setTimeout(() => toast.remove(), 200);
+            }, duration);
+        }
+
+        function copyText(text, successMsg = 'Copied to clipboard') {
+            navigator.clipboard.writeText(text);
+            showToast(successMsg, 'success');
+        }
+
+        // Status Filter Tabs
+        function setStatusFilter(filter) {
+            currentStatusFilter = filter;
+            ['all', 'running', 'stopped'].forEach(f => {
+                const btn = document.getElementById(`filterTab-${f}`);
+                if (!btn) return;
+                if (f === filter) {
+                    btn.className = "px-2.5 py-1 rounded-md text-white bg-orange-700 dark:bg-orange-600 font-semibold transition";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-md hover:text-zinc-900 dark:hover:text-white transition";
+                }
+            });
+            filterProjectCards();
+        }
+
+        function filterProjectCards() {
+            const query = (document.getElementById('projectSearch').value || '').toLowerCase().trim();
+            const cards = document.querySelectorAll('.project-card');
+
+            cards.forEach(card => {
+                const name = (card.getAttribute('data-name') || '').toLowerCase();
+                const domain = (card.getAttribute('data-domain') || '').toLowerCase();
+                const status = (card.getAttribute('data-status') || '').toLowerCase();
+
+                let matchesSearch = !query || name.includes(query) || domain.includes(query);
+                let matchesStatus = true;
+
+                if (currentStatusFilter === 'running') {
+                    matchesStatus = status.startsWith('running');
+                } else if (currentStatusFilter === 'stopped') {
+                    matchesStatus = status === 'stopped' || status === 'crashed';
+                }
+
+                if (matchesSearch && matchesStatus) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Tab Switching for Deploy Modal
+        function switchDeployTab(tab) {
+            activeDeployTab = tab;
+            const tabGit = document.getElementById('tabGit');
+            const tabExec = document.getElementById('tabExec');
+            const gitSection = document.getElementById('gitSection');
+            const execSection = document.getElementById('execSection');
+
+            if (tab === 'git') {
+                tabGit.className = "text-xs font-semibold pb-2.5 px-3 border-b-2 border-orange-700 dark:border-orange-500 text-orange-700 dark:text-orange-400";
+                tabExec.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white";
+                gitSection.classList.remove('hidden');
+                execSection.classList.add('hidden');
+            } else {
+                tabExec.className = "text-xs font-semibold pb-2.5 px-3 border-b-2 border-orange-700 dark:border-orange-500 text-orange-700 dark:text-orange-400";
+                tabGit.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white";
+                execSection.classList.remove('hidden');
+                gitSection.classList.add('hidden');
+            }
+        }
+
+        function parseEnvVars(text) {
+            const env = {};
+            if (!text) return env;
+            const lines = text.split('\n');
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('#')) continue;
+                const eqIdx = line.indexOf('=');
+                if (eqIdx > 0) {
+                    const key = line.substring(0, eqIdx).trim();
+                    const val = line.substring(eqIdx + 1).trim();
+                    if (key) env[key] = val;
+                }
+            }
+            return env;
+        }
+
+        // Deployment Handler
+        async function handleDeploy(e) {
+            e.preventDefault();
+            const btn = document.getElementById('deploySubmitBtn');
+            const name = document.getElementById('appName').value.trim();
+            const domain = document.getElementById('appDomain').value.trim() || undefined;
+            const restart_policy = document.getElementById('restartPolicy').value;
+            const health_check_url = document.getElementById('healthCheckUrl').value.trim() || undefined;
+            const env = parseEnvVars(document.getElementById('appEnvVars').value);
+
+            btn.disabled = true;
+            btn.innerText = "Deploying...";
+
+            try {
+                if (activeDeployTab === 'git') {
+                    const gitUrl = document.getElementById('gitRepo').value.trim();
+                    const branch = document.getElementById('gitBranch').value.trim() || 'main';
+                    const customPort = document.getElementById('gitPort').value.trim();
+                    const buildCmd = document.getElementById('gitBuildCmd').value.trim() || undefined;
+                    const runCmd = document.getElementById('gitRunCmd').value.trim() || undefined;
+
+                    const payload = {
+                        name: name,
+                        repo_url: gitUrl,
+                        branch: branch,
+                        domain: domain,
+                        port: customPort ? parseInt(customPort) : undefined,
+                        build_cmd: buildCmd,
+                        run_cmd: runCmd,
+                        restart_policy: restart_policy,
+                        health_check_url: health_check_url,
+                        env: env
+                    };
+
+                    const res = await fetch('/api/deploy/git', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.text();
+                        showToast(`Deployment failed: ${err}`, 'error');
+                        btn.disabled = false;
+                        btn.innerText = "Deploy Project";
+                        return;
+                    }
+                } else {
+                    const exec = document.getElementById('appExec').value.trim();
+                    const rawArgs = document.getElementById('appArgs').value.trim();
+                    const customPort = document.getElementById('execPort').value.trim();
+                    const args = rawArgs ? rawArgs.split(/\s+/) : [];
+
+                    const payload = {
+                        name: name,
+                        executable: exec,
+                        args: args,
+                        domain: domain,
+                        port: customPort ? parseInt(customPort) : undefined,
+                        restart_policy: restart_policy,
+                        health_check_url: health_check_url,
+                        env: env,
+                        auto_start: true
+                    };
+
+                    const res = await fetch('/api/apps', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.text();
+                        showToast(`Creation failed: ${err}`, 'error');
+                        btn.disabled = false;
+                        btn.innerText = "Deploy Project";
+                        return;
+                    }
+                }
+
+                showToast('Project created successfully! Loading...', 'success');
+                closeDeployModal();
+                setTimeout(() => location.reload(), 800);
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+                btn.disabled = false;
+                btn.innerText = "Deploy Project";
+            }
+        }
+
+        // Project Inspection / Details Modal
+        async function inspectApp(id) {
+            currentInspectAppId = id;
+            try {
+                const res = await fetch(`/api/apps/${id}`);
+                if (!res.ok) {
+                    showToast('Failed to load project details', 'error');
+                    return;
+                }
+                const app = await res.json();
+                cachedAppInfo = app;
+                currentInspectAppName = app.config.name;
+
+                document.getElementById('inspectAppName').innerText = app.config.name;
+                document.getElementById('inspectAppId').innerText = app.config.id;
+
+                const statusPill = document.getElementById('inspectAppStatusPill');
+                const isRunning = app.status && typeof app.status === 'object' && 'running' in app.status;
+                currentInspectAppRunning = isRunning;
+
+                if (app.is_building) {
+                    statusPill.className = "text-[11px] font-mono text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-2 py-0.5 rounded-full";
+                    statusPill.innerText = "Building";
+                } else if (isRunning) {
+                    statusPill.className = "text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-2 py-0.5 rounded-full";
+                    statusPill.innerText = `Running (PID ${app.status.running.pid})`;
+                } else {
+                    statusPill.className = "text-[11px] font-mono text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-full";
+                    statusPill.innerText = "Stopped";
+                }
+
+                document.getElementById('inspectDomain').innerText = app.config.domain || 'None';
+                document.getElementById('inspectPort').innerText = app.config.port ? `:${app.config.port}` : 'Auto';
+                document.getElementById('inspectPolicy').innerText = app.config.restart_policy || 'On Failure';
+
+                // Health status
+                const healthStr = typeof app.health === 'string' ? app.health : (app.health?.status || 'unknown');
+                document.getElementById('inspectHealth').innerText = healthStr;
+                document.getElementById('inspectUptime').innerText = app.uptime_secs ? `${Math.floor(app.uptime_secs / 60)}m` : '-';
+                document.getElementById('inspectRam').innerText = app.rss_bytes ? `${(app.rss_bytes / (1024*1024)).toFixed(1)} MB` : '-';
+
+                // Command
+                const cmd = app.config.args?.length ? `${app.config.executable} ${app.config.args.join(' ')}` : app.config.executable;
+                document.getElementById('inspectCommand').innerText = cmd;
+
+                // Git Section
+                const gitSec = document.getElementById('inspectGitSection');
+                if (app.config.git) {
+                    gitSec.classList.remove('hidden');
+                    document.getElementById('inspectGitRepo').innerText = app.config.git.repo_url;
+                    document.getElementById('inspectGitBranch').innerText = `branch: ${app.config.git.branch}`;
+                } else {
+                    gitSec.classList.add('hidden');
+                }
+
+                // Env Vars
+                renderInspectEnvVars(app.config.env || {});
+
+                // Curl Snippet
+                const hostHeader = app.config.domain ? `-H "Host: ${app.config.domain}" ` : '';
+                const portVal = app.config.port || 3000;
+                document.getElementById('inspectCurlSnippet').innerText = `curl -i ${hostHeader}http://127.0.0.1:${portVal}/`;
+
+                // Toggle Button text
+                const toggleBtn = document.getElementById('inspectToggleBtn');
+                toggleBtn.innerText = isRunning ? "Restart" : "Start";
+
+                document.getElementById('appDetailsModal').classList.remove('hidden');
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        function renderInspectEnvVars(env) {
+            const list = document.getElementById('inspectEnvList');
+            const keys = Object.keys(env);
+            if (keys.length === 0) {
+                list.innerHTML = '<span class="text-zinc-400">No environment variables set.</span>';
+                return;
+            }
+            list.innerHTML = keys.map(k => {
+                const val = env[k];
+                const displayVal = maskEnvValues ? '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;' : escapeHtml(val);
+                return `<div class="flex items-center justify-between py-1 border-b border-zinc-200 dark:border-zinc-900">
+                    <span class="text-zinc-600 dark:text-zinc-400 font-semibold">${escapeHtml(k)}</span>
+                    <span class="text-zinc-900 dark:text-zinc-200">${displayVal}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleEnvMask() {
+            maskEnvValues = !maskEnvValues;
+            document.getElementById('toggleMaskBtn').innerText = maskEnvValues ? "Show Values" : "Hide Values";
+            if (cachedAppInfo) {
+                renderInspectEnvVars(cachedAppInfo.config.env || {});
+            }
+        }
+
+        function copyInspectAppId() {
+            if (currentInspectAppId) {
+                copyText(currentInspectAppId, 'App ID copied');
+            }
+        }
+
+        function copyProxyCurl() {
+            const text = document.getElementById('inspectCurlSnippet').innerText;
+            copyText(text, 'cURL command copied');
+        }
+
+        async function toggleInspectAppRunState() {
+            if (!currentInspectAppId) return;
+            const action = currentInspectAppRunning ? 'restart' : 'start';
+            await appAction(currentInspectAppId, action);
+        }
+
+        async function deleteInspectedApp() {
+            if (currentInspectAppId) {
+                closeInspectModal();
+                await deleteApp(currentInspectAppId);
+            }
+        }
+
+        // Live Log Console with Streaming & Auto-scroll
+        async function viewLogs(id, name) {
+            currentLogAppId = id;
+            currentLogAppName = name;
+            document.getElementById('logsTitle').innerText = `${name} (${id}) &middot; Terminal Output`;
+            document.getElementById('logsModal').classList.remove('hidden');
+
+            await refreshCurrentLogs();
+
+            if (logPollingInterval) clearInterval(logPollingInterval);
+            logPollingInterval = setInterval(refreshCurrentLogs, 1500);
+        }
+
+        function closeLogsModal() {
+            document.getElementById('logsModal').classList.add('hidden');
+            if (logPollingInterval) {
+                clearInterval(logPollingInterval);
+                logPollingInterval = null;
+            }
+            currentLogAppId = null;
+        }
+
+        async function refreshCurrentLogs() {
+            if (!currentLogAppId) return;
+            const logBox = document.getElementById('logContent');
+            try {
+                const res = await fetch(`/api/apps/${currentLogAppId}/logs`);
+                if (!res.ok) {
+                    logBox.innerText = 'Failed to load process logs.';
+                    return;
+                }
+                rawLogLines = await res.json();
+                renderLogs();
+            } catch (err) {
+                logBox.innerText = 'Error loading logs: ' + err.message;
+            }
+        }
+
+        function setLogStreamFilter(stream) {
+            logStreamFilter = stream;
+            ['all', 'stdout', 'stderr', 'build'].forEach(s => {
+                const btn = document.getElementById(`logFilter-${s}`);
+                if (!btn) return;
+                if (s === stream) {
+                    btn.className = "px-2 py-0.5 rounded text-white bg-orange-600 font-semibold transition";
+                } else {
+                    btn.className = "px-2 py-0.5 rounded text-zinc-400 hover:text-white transition";
+                }
+            });
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const logBox = document.getElementById('logContent');
+            const autoScroll = document.getElementById('autoScrollCheck').checked;
+
+            if (!rawLogLines || rawLogLines.length === 0) {
+                logBox.innerHTML = '<span class="text-zinc-600">No output generated yet.</span>';
+                return;
+            }
+
+            const filtered = rawLogLines.filter(l => {
+                if (logStreamFilter === 'all') return true;
+                return l.stream === logStreamFilter;
+            });
+
+            if (filtered.length === 0) {
+                logBox.innerHTML = `<span class="text-zinc-600">No logs for stream '${logStreamFilter}'.</span>`;
+                return;
+            }
+
+            logBox.innerHTML = filtered.map(l => {
+                const time = new Date(l.timestamp * 1000).toLocaleTimeString();
+                let tagColor = 'text-zinc-500';
+                if (l.stream === 'build') tagColor = 'text-amber-400 font-semibold';
+                else if (l.stream === 'system') tagColor = 'text-purple-400 font-semibold';
+                else if (l.stream === 'stderr') tagColor = 'text-rose-400';
+                else if (l.stream === 'stdout') tagColor = 'text-emerald-400';
+
+                return `<div class="py-0.5"><span class="text-zinc-600 select-none mr-2">[${time}]</span><span class="${tagColor} mr-2">[${l.stream}]</span><span>${escapeHtml(l.message)}</span></div>`;
+            }).join('');
+
+            if (autoScroll) {
+                logBox.scrollTop = logBox.scrollHeight;
+            }
+        }
+
+        function copyLogs() {
+            const text = document.getElementById('logContent').innerText;
+            copyText(text, 'Logs copied to clipboard');
+        }
+
+        function downloadLogs() {
+            const text = document.getElementById('logContent').innerText;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${currentLogAppName || 'app'}-logs.txt`;
+            a.click();
+            showToast('Logs downloaded', 'success');
+        }
+
+        // Actions: Redeploy, Start, Stop, Restart, Delete
+        async function redeployApp(id) {
+            showToast(`Triggering rebuild & redeploy for ${id}...`, 'info');
+            try {
+                const res = await fetch(`/api/apps/${id}/redeploy`, { method: 'POST' });
+                if (!res.ok) {
+                    showToast('Redeploy failed: ' + await res.text(), 'error');
+                    return;
+                }
+                showToast('Redeployment started', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        async function appAction(id, action) {
+            try {
+                const res = await fetch(`/api/apps/${id}/${action}`, { method: 'POST' });
+                if (!res.ok) {
+                    showToast(`Failed to ${action}: ` + await res.text(), 'error');
+                    return;
+                }
+                showToast(`App ${action}ed successfully`, 'success');
+                setTimeout(() => location.reload(), 800);
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteApp(id) {
+            if (!confirm(`Are you sure you want to delete project '${id}'? This cannot be undone.`)) return;
+            try {
+                const res = await fetch(`/api/apps/${id}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    showToast('Delete failed: ' + await res.text(), 'error');
+                    return;
+                }
+                showToast(`Project '${id}' deleted`, 'success');
+                setTimeout(() => location.reload(), 800);
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        // Backup Migration / Import
         function loadImportFile(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -524,7 +1311,7 @@
             const submitBtn = document.getElementById('importSubmitBtn');
 
             if (!jsonStr) {
-                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 block";
                 statusDiv.innerText = "Please select a backup JSON file or paste JSON content.";
                 return;
             }
@@ -533,13 +1320,13 @@
             try {
                 payload = JSON.parse(jsonStr);
             } catch (err) {
-                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 block";
                 statusDiv.innerText = "Invalid JSON: " + err.message;
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "Importing...";
+            submitBtn.innerText = "Restoring...";
 
             try {
                 const res = await fetch('/api/system/import', {
@@ -550,44 +1337,24 @@
 
                 const data = await res.json();
                 if (res.ok) {
-                    statusDiv.className = "text-xs p-3 rounded-lg border bg-emerald-950/40 border-emerald-900/50 text-emerald-400 block";
+                    statusDiv.className = "text-xs p-3 rounded-lg border bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 block";
                     statusDiv.innerText = `Migration successful! ${data.imported} new imported, ${data.updated} updated (${data.total} total). Reloading...`;
                     setTimeout(() => window.location.reload(), 1200);
                 } else {
-                    statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                    statusDiv.className = "text-xs p-3 rounded-lg border bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 block";
                     statusDiv.innerText = data.error || (data.errors ? data.errors.join(", ") : "Import failed");
                     submitBtn.disabled = false;
                     submitBtn.innerText = "Import & Restore";
                 }
             } catch (err) {
-                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-950/40 border-red-900/50 text-red-400 block";
+                statusDiv.className = "text-xs p-3 rounded-lg border bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 block";
                 statusDiv.innerText = "Network error: " + err.message;
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Import & Restore";
             }
         }
-        function closeLogsModal() { document.getElementById('logsModal').classList.add('hidden'); currentLogAppId = null; }
 
-        function switchDeployTab(tab) {
-            activeDeployTab = tab;
-            const tabGit = document.getElementById('tabGit');
-            const tabExec = document.getElementById('tabExec');
-            const gitSection = document.getElementById('gitSection');
-            const execSection = document.getElementById('execSection');
-
-            if (tab === 'git') {
-                tabGit.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white";
-                tabExec.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white";
-                gitSection.classList.remove('hidden');
-                execSection.classList.add('hidden');
-            } else {
-                tabExec.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-white text-white";
-                tabGit.className = "text-xs font-medium pb-2.5 px-3 border-b-2 border-transparent text-zinc-400 hover:text-white";
-                execSection.classList.remove('hidden');
-                gitSection.classList.add('hidden');
-            }
-        }
-
+        // GitHub Integration
         async function submitPat(e) {
             e.preventDefault();
             const token = document.getElementById('patInput').value.trim();
@@ -599,49 +1366,50 @@
                     body: JSON.stringify({ token })
                 });
                 if (!res.ok) {
-                    alert('Token validation failed: ' + await res.text());
+                    showToast('Token validation failed: ' + await res.text(), 'error');
                     return;
                 }
+                showToast('GitHub connected successfully', 'success');
                 closePatModal();
-                location.reload();
+                setTimeout(() => location.reload(), 800);
             } catch (err) {
-                alert('Error: ' + err);
+                showToast('Error: ' + err.message, 'error');
             }
         }
 
         async function openGithubModal() {
             document.getElementById('githubModal').classList.remove('hidden');
             const listDiv = document.getElementById('repoList');
-            listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">Loading your GitHub repositories...</div>';
+            listDiv.innerHTML = '<div class="py-8 text-center text-zinc-400">Loading your GitHub repositories...</div>';
             try {
                 const res = await fetch('/auth/repos');
                 if (!res.ok) {
-                    listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">Failed to load repositories. Please reconnect GitHub.</div>';
+                    listDiv.innerHTML = '<div class="py-8 text-center text-zinc-400">Failed to load repositories. Please reconnect GitHub.</div>';
                     return;
                 }
                 allRepos = await res.json();
                 renderRepoList(allRepos);
             } catch (err) {
-                listDiv.innerHTML = '<div class="py-8 text-center text-rose-500">Error: ' + err + '</div>';
+                listDiv.innerHTML = '<div class="py-8 text-center text-rose-500">Error: ' + err.message + '</div>';
             }
         }
 
         function renderRepoList(repos) {
             const listDiv = document.getElementById('repoList');
             if (!repos || repos.length === 0) {
-                listDiv.innerHTML = '<div class="py-8 text-center text-zinc-500">No repositories found.</div>';
+                listDiv.innerHTML = '<div class="py-8 text-center text-zinc-400">No repositories found.</div>';
                 return;
             }
             listDiv.innerHTML = repos.map(r => `
-                <div class="border border-zinc-800/80 bg-zinc-950 p-3 rounded-lg hover:border-zinc-700 flex items-center justify-between transition">
+                <div class="border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-lg hover:border-orange-500 flex items-center justify-between transition">
                     <div>
-                        <div class="font-medium text-white text-xs flex items-center gap-2">
+                        <div class="font-medium text-zinc-900 dark:text-white text-xs flex items-center gap-2">
                             ${escapeHtml(r.full_name)}
-                            ${r.private ? '<span class="text-[10px] text-amber-400 bg-amber-950/40 border border-amber-900/50 px-1.5 rounded">Private</span>' : ''}
+                            ${r.private ? '<span class="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-1.5 rounded">Private</span>' : ''}
                         </div>
-                        <div class="text-[11px] text-zinc-500 mt-0.5">${r.language || 'Code'} • branch: ${r.default_branch}</div>
+                        <div class="text-[11px] text-zinc-500 mt-0.5">${r.language || 'Code'} &bull; branch: ${r.default_branch}</div>
                     </div>
-                    <button onclick="deploySelectedRepoPrompt('${r.full_name}', '${r.clone_url}', '${r.default_branch}')" class="bg-white text-black hover:bg-zinc-200 text-xs font-semibold px-3 py-1.5 rounded transition">
+                    <button onclick="deploySelectedRepoPrompt('${r.full_name}', '${r.clone_url}', '${r.default_branch}')" class="bg-orange-700 hover:bg-orange-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
                         Deploy
                     </button>
                 </div>
@@ -649,7 +1417,7 @@
         }
 
         function filterRepoList() {
-            const query = document.getElementById('repoSearch').value.toLowerCase();
+            const query = (document.getElementById('repoSearch').value || '').toLowerCase();
             const filtered = allRepos.filter(r => r.full_name.toLowerCase().includes(query));
             renderRepoList(filtered);
         }
@@ -671,157 +1439,49 @@
                     body: JSON.stringify(payload)
                 });
                 if (!res.ok) {
-                    alert('Deploy failed: ' + await res.text());
+                    showToast('Deploy failed: ' + await res.text(), 'error');
                     return;
                 }
-                location.reload();
+                showToast('Repository deployment started!', 'success');
+                setTimeout(() => location.reload(), 1000);
             } catch (err) {
-                alert('Error deploying: ' + err);
+                showToast('Error deploying: ' + err.message, 'error');
             }
-        }
-
-        async function handleDeploy(e) {
-            e.preventDefault();
-            const name = document.getElementById('appName').value.trim();
-            const domain = document.getElementById('appDomain').value.trim() || undefined;
-
-            if (activeDeployTab === 'git') {
-                const gitUrl = document.getElementById('gitRepo').value.trim();
-                const branch = document.getElementById('gitBranch').value.trim() || 'main';
-                const policy = document.getElementById('restartPolicy').value;
-
-                const payload = {
-                    name: name,
-                    repo_url: gitUrl,
-                    branch: branch,
-                    domain: domain,
-                    restart_policy: policy
-                };
-                const res = await fetch('/api/deploy/git', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) { alert('Deploy failed: ' + await res.text()); return; }
-            } else {
-                const exec = document.getElementById('appExec').value.trim();
-                const rawArgs = document.getElementById('appArgs').value.trim();
-                const args = rawArgs ? rawArgs.split(/\s+/) : [];
-
-                const payload = {
-                    name: name,
-                    executable: exec,
-                    args: args,
-                    domain: domain,
-                    restart_policy: 'always',
-                    auto_start: true
-                };
-                const res = await fetch('/api/apps', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) { alert('Deploy failed: ' + await res.text()); return; }
-            }
-            closeDeployModal();
-            location.reload();
-        }
-
-        async function redeployApp(id) {
-            if (!confirm(`Redeploy latest commit for '${id}'?`)) return;
-            try {
-                const res = await fetch(`/api/apps/${id}/redeploy`, { method: 'POST' });
-                if (!res.ok) { alert('Redeploy failed: ' + await res.text()); return; }
-                location.reload();
-            } catch (err) {
-                alert('Error: ' + err);
-            }
-        }
-
-        async function appAction(id, action) {
-            try {
-                const res = await fetch(`/api/apps/${id}/${action}`, { method: 'POST' });
-                if (!res.ok) { alert(`Failed to ${action}: ` + await res.text()); return; }
-                location.reload();
-            } catch (err) { alert('Error: ' + err); }
-        }
-
-        async function deleteApp(id) {
-            if (!confirm(`Delete project '${id}'?`)) return;
-            try {
-                const res = await fetch(`/api/apps/${id}`, { method: 'DELETE' });
-                if (!res.ok) { alert('Delete failed: ' + await res.text()); return; }
-                location.reload();
-            } catch (err) { alert('Error: ' + err); }
-        }
-
-        async function viewLogs(id, name) {
-            currentLogAppId = id;
-            document.getElementById('logsTitle').innerText = `${name} (${id})`;
-            document.getElementById('logsModal').classList.remove('hidden');
-            await refreshCurrentLogs();
-        }
-
-        async function refreshCurrentLogs() {
-            if (!currentLogAppId) return;
-            const logBox = document.getElementById('logContent');
-            try {
-                const res = await fetch(`/api/apps/${currentLogAppId}/logs`);
-                if (!res.ok) { logBox.innerText = 'Failed to load logs.'; return; }
-                const logs = await res.json();
-                if (logs.length === 0) {
-                    logBox.innerHTML = '<span class="text-zinc-600">No logs generated yet.</span>';
-                    return;
-                }
-                logBox.innerHTML = logs.map(l => {
-                    const time = new Date(l.timestamp * 1000).toLocaleTimeString();
-                    let tagColor = 'text-zinc-500';
-                    if (l.stream === 'build') tagColor = 'text-amber-400 font-semibold';
-                    else if (l.stream === 'system') tagColor = 'text-purple-400 font-semibold';
-                    else if (l.stream === 'stderr') tagColor = 'text-rose-400';
-                    else if (l.stream === 'stdout') tagColor = 'text-emerald-400';
-
-                    return `<div class="py-0.5"><span class="text-zinc-600 select-none mr-2">[${time}]</span><span class="${tagColor} mr-2">[${l.stream}]</span><span>${escapeHtml(l.message)}</span></div>`;
-                }).join('');
-                logBox.scrollTop = logBox.scrollHeight;
-            } catch (err) {
-                logBox.innerText = 'Error loading logs: ' + err;
-            }
-        }
-
-        function copyLogs() {
-            const text = document.getElementById('logContent').innerText;
-            navigator.clipboard.writeText(text);
-            alert('Logs copied to clipboard!');
-        }
-
-        function filterProjectCards() {
-            const q = document.getElementById('projectSearch').value.toLowerCase();
-            const cards = document.querySelectorAll('.project-card');
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name') || '';
-                const domain = card.getAttribute('data-domain') || '';
-                if (name.includes(q) || domain.includes(q)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Close modal on Escape
+        // Global Keyboard Shortcuts
         document.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            const isInputFocused = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+
+            // Escape closes all open modals
             if (e.key === 'Escape') {
                 closeDeployModal();
                 closeGithubModal();
                 closePatModal();
                 closeLogsModal();
+                closeImportModal();
+                closeInspectModal();
+            }
+
+            // '/' key focuses the search input when not typing in another input
+            if (e.key === '/' && !isInputFocused) {
+                e.preventDefault();
+                const search = document.getElementById('projectSearch');
+                if (search) search.focus();
+            }
+
+            // 'n' key opens New Project modal when not typing in another input
+            if ((e.key === 'n' || e.key === 'N') && !isInputFocused) {
+                e.preventDefault();
+                openDeployModal();
             }
         });
     </script>
