@@ -1,6 +1,9 @@
-# LaunchLite — Lightweight Pure-Rust PaaS
+> [!WARNING]
+> **Experimental Project**: LaunchLite is currently under active development and experimentation. Features, APIs, and configurations are subject to change as the platform evolves.
 
-A minimal, ultra-low-overhead application hosting platform written in pure Rust, organized as a modular Cargo workspace monorepo.
+# LaunchLite
+
+A minimal, ultra-low-overhead application hosting and process supervision platform packaged as a single lightweight binary.
 
 ## One-Line Install & Run
 
@@ -20,7 +23,7 @@ launchlite start --port 8080
 
 ### 3. Manage the Background Service
 ```bash
-# Check live status, memory (RSS), and running apps
+# Check live status, application RAM usage, and running apps
 launchlite status
 
 # Stop the background service
@@ -34,17 +37,18 @@ Open `http://localhost:3000` (or your configured port) in your browser.
 
 ---
 
-## Architecture & Goals
-- **Minimal RAM footprint**: ~4.8 MB to 6.4 MB idle RSS memory.
-- **Small binary size**: Standalone release binary of ~4.7 MB.
-- **Modern Clean UI**: Server-rendered frontend using [`axum-template`](https://docs.rs/axum-template/latest/axum_template/) with [MiniJinja](https://github.com/mitsuhiko/minijinja) and Tailwind CSS via CDN. Zero Node.js/npm dependencies, instant fast iteration, and clean dark aesthetic.
+## Architecture & Features
+- **Minimal Resource Footprint**: Under 10 MB idle memory with instant cold starts and minimal CPU overhead.
+- **Single Lightweight Binary**: Under 5 MB standalone binary containing API, process supervisor, and embedded web UI.
+- **Modern Flat UI**: Server-rendered dashboard using [`axum-template`](https://docs.rs/axum-template/latest/axum_template/) with [MiniJinja](https://github.com/mitsuhiko/minijinja) and Tailwind CSS. Clean flat styling with dark orange primary accents, dark/light modes, 2-column statistics and project layout, and zero Node.js/npm dependencies.
+- **Real-Time RAM & Resource Tracking**: Displays aggregated live RAM usage across all child applications by monitoring real system process memory.
 - **VPS Migration (Export & Import)**: 1-click migration between VPS servers. Export all project configs, custom domains, git repos, and environment variables to a portable backup JSON file, and restore on any new server instantly.
 - **Custom Domains & Built-in Reverse Proxy**: Assign custom domains (e.g. `api.example.com`, `myapp.domain.com`) with zero external proxy dependencies. Incoming HTTP requests are dynamically routed to the respective internal application port based on the `Host` header.
 - **Caddyfile Auto-Generation**: Instant Caddy configuration export (`GET /api/system/caddyfile`) for automated Let's Encrypt TLS certificates in production.
 - **Direct GitHub & Git Deployment**: Deploy directly from any GitHub repository with automatic project type detection (Rust, Node.js, Python, Go, Static HTML).
 - **Dual Authentication**: GitHub OAuth 2.0 flow or instant Personal Access Token (PAT) connection.
-- **Safe process supervision**: Graceful process termination with `SIGTERM` followed by a configurable timeout and `SIGKILL`, exit status capturing, and crash recovery policies (`Never`, `Always`, `OnFailure`).
-- **Real-time log capture**: In-memory ring buffer (up to 500 lines per app) capturing build logs, process `stdout`, and `stderr`.
+- **Safe Process Supervision**: Graceful process termination with `SIGTERM` followed by a configurable timeout and `SIGKILL`, exit status capturing, and crash recovery policies (`Never`, `Always`, `OnFailure`).
+- **Real-Time Log Capture**: In-memory ring buffer (up to 500 lines per app) capturing build logs, process `stdout`, and `stderr`.
 
 ---
 
@@ -85,8 +89,8 @@ cargo build --release -p cli
 LaunchLite includes built-in migration to easily move between VPS providers:
 
 ### In the Web Dashboard
-1. **On your old VPS**: Click **Export** in the top navigation bar to download `launchlite-backup-<timestamp>.json`.
-2. **On your new VPS**: Click **Import**, select your backup JSON file (or paste its content), and click **Import & Restore**. All applications, ports, domains, and git repos are immediately registered.
+1. **On your old VPS**: Under the left sidebar's **Backup & Migration** panel, click **Export** to download `launchlite-backup-<timestamp>.json`.
+2. **On your new VPS**: Under **Backup & Migration**, click **Import**, select your backup JSON file (or paste its content), and click **Import & Restore**. All applications, ports, domains, and git repos are immediately registered.
 
 ### Via the REST API
 ```bash

@@ -19,7 +19,7 @@ RED='\033[31m'
 NC='\033[0m'
 
 echo -e "${BOLD}${BLUE}▲ LaunchLite Installer${NC}"
-echo -e "Minimal, ultra-low-overhead pure-Rust PaaS\n"
+echo -e "Minimal, ultra-low-overhead application hosting platform\n"
 
 # 1. Detect OS & Architecture
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
