@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 return Ok(());
             }
             "--version" | "-v" | "version" => {
-                println!("LaunchLite v0.1.0 (modular PaaS)");
+                println!("LaunchLite v0.1.0");
                 return Ok(());
             }
             "dev" => {
@@ -365,7 +365,7 @@ fn is_pid_alive(pid: i32) -> bool {
 
 fn print_help() {
     println!(
-        r#"LaunchLite — Minimal & Fast Pure-Rust PaaS
+        r#"LaunchLite — Lightweight Application Platform
 
 USAGE:
     launchlite [COMMAND] [OPTIONS]
