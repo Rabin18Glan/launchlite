@@ -8,7 +8,7 @@ use axum::{
     Router,
     extract::{Request, State},
     http::{HeaderMap, header},
-    response::{IntoResponse, Response},
+    response::{Html, IntoResponse, Response},
     routing::{get, post},
 };
 use axum_template::RenderHtml;
@@ -30,6 +30,7 @@ pub struct AppState {
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(dashboard_or_proxy_handler))
+        .route("/projects/new", get(new_project_handler))
         .route("/favicon.ico", get(favicon_handler))
         .route("/health", get(system::health_handler))
         .route("/api/system", get(system::get_system_metrics_handler))
@@ -65,6 +66,10 @@ pub fn create_router(state: AppState) -> Router {
         .route("/auth/logout", get(auth::logout_handler))
         .fallback(proxy::proxy_handler)
         .with_state(state)
+}
+
+async fn new_project_handler() -> Html<&'static str> {
+    Html(include_str!("../../../../services/web/src/templates/new_project.html"))
 }
 
 async fn dashboard_or_proxy_handler(

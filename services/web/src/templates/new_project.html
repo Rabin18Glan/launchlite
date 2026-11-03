@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New project</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: Poppins, sans-serif !important; }
+    body { background: #f7f6f3; color: #24241f; }
+    .field { width: 100%; height: 36px; border: 1px solid #d4d4d8; border-radius: 7px; padding: 7px 10px; background: #fafafa; font-size: 12px; outline: none; }
+    textarea.field { height: auto; min-height: 88px; resize: vertical; }
+    .field:focus { border-color: #c2410c; box-shadow: 0 0 0 3px #c2410c1c; }
+    .label { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 500; color: #52525b; }
+    .preset { border: 1px solid #e4e4e7; border-radius: 10px; background: white; padding: 11px 12px; text-align: left; transition: .18s; }
+    .preset:hover, .preset[aria-pressed=true] { border-color: #c2410c; box-shadow: 0 0 0 2px #c2410c18; }
+    .preset i { font-size: 25px; }
+    .preset small { color: #77776f; font-size: 11px; }
+    .dark body { background: #11120f; color: #f4f4f5; }
+    .dark header, .dark section, .dark .preset { background: #09090b; border-color: #27272a; }
+    .dark .field { background: #18181b; border-color: #3f3f46; color: #f4f4f5; }
+    .dark .label, .dark h1, .dark h2, .dark strong, .dark header a { color: #f4f4f5; }
+    .dark .preset[aria-pressed=true] { border-color: #ea580c; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-zinc-200 bg-white/90">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="/" class="font-semibold text-sm tracking-tight flex items-center gap-2"><img src="/favicon.ico" class="w-6 h-6 rounded" alt="">LaunchLite</a>
+      <a href="/" class="text-xs text-zinc-500 hover:text-orange-700">← Back to projects</a>
+    </div>
+  </header>
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <div class="mb-6"><p class="text-[11px] font-semibold uppercase tracking-[.14em] text-orange-700 mb-2">Create project</p><h1 class="text-2xl font-semibold tracking-tight">New project</h1><p class="text-xs text-zinc-500 mt-1">Choose a preset and configure your deployment.</p></div>
+    <form id="projectForm" class="space-y-3">
+      <section class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4"><div><h2 class="font-semibold">Application preset</h2><p class="text-xs text-stone-500 mt-1">Presets fill deployment defaults. You can edit every field.</p></div><span class="text-xs text-stone-400">01 / 03</span></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="presets">
+          <button type="button" class="preset" data-preset="auto" aria-pressed="true"><span class="block text-2xl mb-2">✦</span><strong class="block text-sm">Auto detect</strong><small>Use repository files</small></button>
+          <button type="button" class="preset" data-preset="react"><i class="devicon-react-original colored block mb-2"></i><strong class="block text-sm">React / Vite</strong><small>Static frontend</small></button>
+          <button type="button" class="preset" data-preset="nextjs"><i class="devicon-nextjs-plain block mb-2"></i><strong class="block text-sm">Next.js</strong><small>Node web app</small></button>
+          <button type="button" class="preset" data-preset="axum"><i class="devicon-rust-original block mb-2"></i><strong class="block text-sm">Rust / Axum</strong><small>Rust web service</small></button>
+          <button type="button" class="preset" data-preset="express"><i class="devicon-express-original block mb-2"></i><strong class="block text-sm">Express</strong><small>Node API</small></button>
+          <button type="button" class="preset" data-preset="custom"><span class="block text-2xl mb-2">⌘</span><strong class="block text-sm">Custom executable</strong><small>Run a host command</small></button>
+        </div>
+        <p id="presetHelp" class="text-xs text-stone-500 mt-3">Build and run commands are detected from the repository.</p>
+      </section>
+      <section class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4"><h2 class="font-semibold">Project details</h2><span class="text-xs text-stone-400">02 / 03</span></div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div><label class="label" for="name">Project name *</label><input class="field" id="name" required placeholder="my-app"></div>
+          <div><label class="label" for="domain">Custom domain</label><input class="field" id="domain" placeholder="app.example.com"></div>
+        </div>
+        <div id="gitFields" class="mt-3 space-y-3">
+          <div><label class="label" for="repo">Git repository URL *</label><input class="field" id="repo" placeholder="https://github.com/user/repo.git"></div>
+          <div class="grid sm:grid-cols-2 gap-3"><div><label class="label" for="branch">Branch</label><input class="field" id="branch" value="main"></div><div><label class="label" for="port">Port</label><input class="field" id="port" type="number" min="1" max="65535" placeholder="Auto assigned"></div></div>
+          <div class="grid sm:grid-cols-2 gap-3"><div><label class="label" for="build">Build command</label><input class="field" id="build" placeholder="Auto detected"></div><div><label class="label" for="run">Run command</label><input class="field" id="run" placeholder="Auto detected"></div></div>
+        </div>
+        <div id="customFields" class="hidden mt-3 space-y-3"><div><label class="label" for="executable">Executable *</label><input class="field" id="executable" placeholder="/path/to/server"></div><div class="grid sm:grid-cols-2 gap-3"><div><label class="label" for="args">Arguments</label><input class="field" id="args" placeholder="--production"></div><div><label class="label" for="customPort">Port</label><input class="field" id="customPort" type="number" min="1" max="65535" placeholder="Auto assigned"></div></div></div>
+      </section>
+      <section class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5"><div class="flex items-center justify-between mb-4"><h2 class="font-semibold">Settings</h2><span class="text-xs text-stone-400">03 / 03</span></div><div class="grid sm:grid-cols-2 gap-3"><div><label class="label" for="restart">Restart policy</label><select class="field" id="restart"><option value="on_failure">On failure</option><option value="always">Always</option><option value="never">Never</option></select></div><div><label class="label" for="health">Health check URL</label><input class="field" id="health" placeholder="/health"></div></div><div class="mt-3"><label class="label" for="env">Environment variables</label><textarea class="field" id="env" rows="4" placeholder="KEY=value (one per line)"></textarea></div></section>
+      <div class="flex items-center justify-between gap-3"><a href="/" class="text-sm text-stone-500 hover:text-stone-900">Cancel</a><button id="submit" type="submit" class="bg-orange-700 hover:bg-orange-800 text-white text-sm font-semibold rounded-lg px-6 py-3">Deploy project →</button></div>
+      <p id="error" role="alert" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3"></p>
+    </form>
+  </main>
+  <script>
+    if (localStorage.getItem('launchlite_theme') === 'dark') document.documentElement.classList.add('dark');
+    const presets = {
+      auto: ['', '', '', 'Build and run commands are detected from the repository.'],
+      react: ['8080', 'npm install && npm run build', 'npx vite preview --host 0.0.0.0 --port 8080', 'For Vite projects with a build script.'],
+      nextjs: ['3000', 'npm install && npm run build', 'npm run start -- --hostname 0.0.0.0 --port 3000', 'Requires a Next.js start script.'],
+      axum: ['3000', 'cargo build --release', 'cargo run --release', 'Your Axum app must listen on PORT (3000).'],
+      express: ['3000', 'npm install', 'npm start', 'Requires a start script and must listen on PORT (3000).'],
+      custom: ['', '', '', 'Run an executable already on the host.']
+    };
+    let selected = 'auto';
+    const val = id => document.getElementById(id).value.trim();
+    function selectPreset(key) {
+      selected = key;
+      document.querySelectorAll('.preset').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === key)));
+      document.getElementById('gitFields').classList.toggle('hidden', key === 'custom');
+      document.getElementById('customFields').classList.toggle('hidden', key !== 'custom');
+      document.getElementById('repo').required = key !== 'custom';
+      document.getElementById('executable').required = key === 'custom';
+      const [port, build, run, help] = presets[key];
+      document.getElementById('port').value = port;
+      document.getElementById('build').value = build;
+      document.getElementById('run').value = run;
+      document.getElementById('presetHelp').textContent = help;
+    }
+    document.querySelectorAll('.preset').forEach(b => b.addEventListener('click', () => selectPreset(b.dataset.preset)));
+    function parseEnv(text) { const out = {}; for (const line of text.split('\n')) { const item = line.trim(); if (!item || item.startsWith('#')) continue; const index = item.indexOf('='); if (index > 0) out[item.slice(0,index).trim()] = item.slice(index+1).trim(); } return out; }
+    document.getElementById('projectForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const button = document.getElementById('submit'), error = document.getElementById('error');
+      button.disabled = true; button.textContent = 'Deploying…'; error.classList.add('hidden');
+      const common = { name: val('name'), domain: val('domain') || undefined, restart_policy: val('restart'), health_check_url: val('health') || undefined, env: parseEnv(val('env')) };
+      const git = selected !== 'custom';
+      const payload = git ? { ...common, repo_url: val('repo'), branch: val('branch') || 'main', port: val('port') ? Number(val('port')) : undefined, build_cmd: val('build') || undefined, run_cmd: val('run') || undefined } : { ...common, executable: val('executable'), args: val('args') ? val('args').split(/\s+/) : [], port: val('customPort') ? Number(val('customPort')) : undefined };
+      try { const res = await fetch(git ? '/api/deploy/git' : '/api/apps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!res.ok) throw new Error(await res.text()); window.location.href = '/'; }
+      catch (err) { error.textContent = err.message || 'Deployment failed'; error.classList.remove('hidden'); button.disabled = false; button.textContent = 'Deploy project →'; }
+    });
+    const params = new URLSearchParams(location.search); if (presets[params.get('preset')]) selectPreset(params.get('preset'));
+  </script>
+</body>
+</html>
