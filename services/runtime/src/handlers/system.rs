@@ -1,13 +1,13 @@
-use crate::routes::AppState;
-use common::models::{ImportSummary, PlatformExport, SystemMetrics};
+use crate::state::RuntimeState;
 use axum::{
     Json,
     extract::State,
     http::{StatusCode, header},
     response::IntoResponse,
 };
+use common::models::{ImportSummary, PlatformExport, SystemMetrics};
 
-pub async fn get_system_metrics_handler(State(state): State<AppState>) -> Json<SystemMetrics> {
+pub async fn get_system_metrics_handler(State(state): State<RuntimeState>) -> Json<SystemMetrics> {
     Json(state.manager.get_system_metrics().await)
 }
 
@@ -15,7 +15,7 @@ pub async fn health_handler() -> &'static str {
     "OK"
 }
 
-pub async fn get_caddyfile_handler(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn get_caddyfile_handler(State(state): State<RuntimeState>) -> impl IntoResponse {
     let caddyfile = state.manager.generate_caddyfile().await;
     (
         [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],
@@ -23,7 +23,7 @@ pub async fn get_caddyfile_handler(State(state): State<AppState>) -> impl IntoRe
     )
 }
 
-pub async fn export_handler(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn export_handler(State(state): State<RuntimeState>) -> impl IntoResponse {
     let export = state.manager.export_data().await;
     let json_bytes = serde_json::to_vec_pretty(&export).unwrap_or_default();
     let filename = format!("launchlite-backup-{}.json", export.exported_at);
@@ -41,7 +41,7 @@ pub async fn export_handler(State(state): State<AppState>) -> impl IntoResponse 
 }
 
 pub async fn import_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Json(payload): Json<PlatformExport>,
 ) -> Result<Json<ImportSummary>, (StatusCode, String)> {
     state

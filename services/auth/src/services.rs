@@ -1,7 +1,8 @@
 use crate::client::GithubClient;
+use crate::repository::SessionRepository;
+use crate::state::AuthState;
 use common::config::Config;
 use common::models::{UserSession, current_timestamp};
-use db::Database;
 
 pub fn get_authorization_url(config: &Config) -> Result<String, String> {
     let client_id = config
@@ -20,7 +21,7 @@ pub fn get_authorization_url(config: &Config) -> Result<String, String> {
 pub async fn handle_callback(
     config: &Config,
     github: &GithubClient,
-    db: &Database,
+    repository: &SessionRepository,
     code: &str,
 ) -> Result<UserSession, String> {
     let client_id = config
@@ -38,7 +39,8 @@ pub async fn handle_callback(
 
     let user = github.get_user(&token).await?;
 
-    let session_id = format!("sess_{}_{}", user.id, current_timestamp());
+    let session_id = crate::admin::services::random_token()
+        .map_err(|e| format!("Cannot create GitHub session: {e:?}"))?;
     let session = UserSession {
         session_id,
         access_token: token,
@@ -46,18 +48,21 @@ pub async fn handle_callback(
         created_at: current_timestamp(),
     };
 
-    db.save_session(&session).map_err(|e| e.to_string())?;
+    repository
+        .save_session(&session)
+        .map_err(|e| e.to_string())?;
     Ok(session)
 }
 
 pub async fn handle_direct_token(
     github: &GithubClient,
-    db: &Database,
+    repository: &SessionRepository,
     token: &str,
 ) -> Result<UserSession, String> {
     let user = github.get_user(token).await?;
 
-    let session_id = format!("sess_{}_{}", user.id, current_timestamp());
+    let session_id = crate::admin::services::random_token()
+        .map_err(|e| format!("Cannot create GitHub session: {e:?}"))?;
     let session = UserSession {
         session_id,
         access_token: token.to_string(),
@@ -65,10 +70,27 @@ pub async fn handle_direct_token(
         created_at: current_timestamp(),
     };
 
-    db.save_session(&session).map_err(|e| e.to_string())?;
+    repository
+        .save_session(&session)
+        .map_err(|e| e.to_string())?;
     Ok(session)
 }
 
 fn urlencoding_simple(s: &str) -> String {
     s.replace(':', "%3A").replace('/', "%2F")
+}
+
+pub fn find_session(state: &AuthState, session_id: Option<&str>) -> Option<UserSession> {
+    session_id.and_then(|id| state.repository.get_session(id).ok().flatten())
+}
+
+pub fn logout(state: &AuthState, session_id: &str) {
+    let _ = state.repository.delete_session(session_id);
+}
+
+pub async fn list_repositories(
+    state: &AuthState,
+    session: &UserSession,
+) -> Result<Vec<common::GithubRepo>, String> {
+    state.github.get_repos(&session.access_token).await
 }

@@ -1,35 +1,30 @@
 use common::models::{AppConfig, RestartPolicy};
 use rusqlite::{Connection, Result, params};
 
-pub fn init_apps_table(conn: &Connection) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS apps (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            executable TEXT NOT NULL,
-            args_json TEXT NOT NULL,
-            env_json TEXT NOT NULL,
-            working_dir TEXT,
-            restart_policy TEXT NOT NULL,
-            health_check_url TEXT,
-            health_check_interval_secs INTEGER NOT NULL,
-            auto_start INTEGER NOT NULL,
-            git_json TEXT,
-            domain TEXT,
-            port INTEGER,
-            created_at INTEGER NOT NULL
-        )",
-        [],
-    )?;
-
-    // Migrations for existing databases
-    let _ = conn.execute("ALTER TABLE apps ADD COLUMN domain TEXT", []);
-    let _ = conn.execute("ALTER TABLE apps ADD COLUMN port INTEGER", []);
-
-    Ok(())
+#[derive(Clone)]
+pub struct AppRepository {
+    database: db::Database,
 }
 
-pub fn save_app(conn: &Connection, app: &AppConfig) -> Result<()> {
+impl AppRepository {
+    pub fn new(database: db::Database) -> Self {
+        Self { database }
+    }
+    pub fn save_app(&self, app: &AppConfig) -> db::Result<()> {
+        let conn = self.database.connection()?;
+        Ok(save_app(&conn, app)?)
+    }
+    pub fn get_all_apps(&self) -> db::Result<Vec<AppConfig>> {
+        let conn = self.database.connection()?;
+        Ok(get_all_apps(&conn)?)
+    }
+    pub fn delete_app(&self, id: &str) -> db::Result<bool> {
+        let conn = self.database.connection()?;
+        Ok(delete_app(&conn, id)?)
+    }
+}
+
+fn save_app(conn: &Connection, app: &AppConfig) -> Result<()> {
     let args_json = serde_json::to_string(&app.args).unwrap_or_else(|_| "[]".to_string());
     let env_json = serde_json::to_string(&app.env).unwrap_or_else(|_| "{}".to_string());
     let restart_policy =
@@ -74,7 +69,7 @@ pub fn save_app(conn: &Connection, app: &AppConfig) -> Result<()> {
     Ok(())
 }
 
-pub fn get_all_apps(conn: &Connection) -> Result<Vec<AppConfig>> {
+fn get_all_apps(conn: &Connection) -> Result<Vec<AppConfig>> {
     let mut stmt = conn.prepare(
         "SELECT id, name, executable, args_json, env_json, working_dir,
                 restart_policy, health_check_url, health_check_interval_secs, auto_start, git_json,
@@ -121,7 +116,7 @@ pub fn get_all_apps(conn: &Connection) -> Result<Vec<AppConfig>> {
     Ok(apps)
 }
 
-pub fn delete_app(conn: &Connection, id: &str) -> Result<bool> {
+fn delete_app(conn: &Connection, id: &str) -> Result<bool> {
     let count = conn.execute("DELETE FROM apps WHERE id = ?1", params![id])?;
     Ok(count > 0)
 }

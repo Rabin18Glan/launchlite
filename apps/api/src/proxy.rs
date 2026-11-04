@@ -7,7 +7,7 @@ use axum::{
 use reqwest::Method;
 use std::str::FromStr;
 
-use crate::routes::AppState;
+use crate::state::AppState;
 
 pub async fn proxy_handler(State(state): State<AppState>, req: Request) -> Response {
     let host = req

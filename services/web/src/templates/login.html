@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · LaunchLite</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>if (localStorage.getItem('launchlite_theme') === 'dark') document.documentElement.classList.add('dark');</script>
+  <style>
+    * { box-sizing: border-box; font-family: Poppins, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f7f6f3; color: #18181b; }
+    main { width: 100%; max-width: 390px; }
+    .brand { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; margin-bottom: 24px; }
+    .brand img { width: 26px; height: 26px; border-radius: 6px; }
+    section { background: #fff; padding: 26px; border: 1px solid #e4e4e7; border-radius: 14px; box-shadow: 0 8px 32px #18181b05; }
+    h1 { font-size: 22px; letter-spacing: -.6px; margin: 0 0 6px; font-weight: 600; }
+    p { font-size: 12px; line-height: 1.7; color: #71717a; margin: 0 0 22px; }
+    label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 5px; }
+    input { display: block; width: 100%; min-height: 36px; border: 1px solid #d4d4d8; border-radius: 7px; padding: 8px 10px; background: #fafafa; color: inherit; font-size: 12px; margin-bottom: 16px; }
+    input:focus { outline: 2px solid #c2410c40; border-color: #c2410c; }
+    button { width: 100%; border: 0; border-radius: 7px; padding: 10px; background: #c2410c; color: white; font-size: 12px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #9a3412; } button:disabled { opacity: .6; cursor: wait; }
+    [hidden] { display: none !important; }
+    #error { color: #b91c1c; background: #fef2f2; border-radius: 6px; padding: 10px; margin: 14px 0 0; overflow-wrap: anywhere; }
+    .hint { font-size: 10px; margin: -8px 0 16px; }
+    .dark body { background: #11120f; color: #f4f4f5; }
+    .dark section { background: #09090b; border-color: #27272a; }
+    .dark input { background: #18181b; border-color: #3f3f46; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><img src="/favicon.ico" alt="">LaunchLite</div>
+    <section>
+      <h1 id="title">Welcome back</h1>
+      <p id="description">Sign in to manage your projects.</p>
+      <form id="loginForm">
+        <div id="setupFields" hidden><label for="setupToken">Initial setup token</label><input id="setupToken" autocomplete="off" type="password" maxlength="128"><p class="hint">Read the initial-admin-token file in the server’s data directory.</p></div>
+        <label for="username">Username</label><input id="username" autocomplete="username" required minlength="3" maxlength="64" spellcheck="false" autocapitalize="none">
+        <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required maxlength="1024">
+        <div id="confirmFields" hidden><p class="hint">Use at least 12 characters.</p><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" autocomplete="new-password" maxlength="1024"></div>
+        <button id="submit" type="submit">Sign in</button>
+        <p id="error" role="alert" hidden></p>
+      </form>
+    </section>
+  </main>
+  <script>
+    const setup = location.pathname === '/setup';
+    const $ = id => document.getElementById(id);
+    if (setup) {
+      document.title = 'Set up administrator · LaunchLite';
+      $('title').textContent = 'Set up your administrator';
+      $('description').textContent = 'Create the account that will manage this instance.';
+      $('setupFields').hidden = false; $('setupToken').required = true;
+      $('confirmFields').hidden = false; $('confirmPassword').required = true;
+      $('password').minLength = 12; $('password').autocomplete = 'new-password';
+      $('submit').textContent = 'Create administrator';
+    }
+    $('loginForm').addEventListener('submit', async event => {
+      event.preventDefault(); $('error').hidden = true;
+      if (setup && $('password').value !== $('confirmPassword').value) {
+        $('error').textContent = 'Passwords do not match.'; $('error').hidden = false; return;
+      }
+      $('submit').disabled = true; $('submit').textContent = setup ? 'Creating account…' : 'Signing in…';
+      try {
+        const payload = { username: $('username').value.trim(), password: $('password').value };
+        if (setup) payload.setup_token = $('setupToken').value.trim();
+        const response = await fetch(setup ? '/auth/admin/setup' : '/auth/admin/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        location.replace('/');
+      } catch (error) {
+        $('error').textContent = error.message || 'Unable to sign in. Please try again.';
+        $('error').hidden = false; $('submit').disabled = false;
+        $('submit').textContent = setup ? 'Create administrator' : 'Sign in';
+      }
+    });
+  </script>
+</body>
+</html>

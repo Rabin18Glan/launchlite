@@ -1,19 +1,19 @@
-use crate::routes::AppState;
-use common::models::{CreateAppRequest, LogLine};
+use crate::state::RuntimeState;
 use axum::{
     Json,
     extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use common::models::{CreateAppRequest, LogLine};
 
-pub async fn list_apps_handler(State(state): State<AppState>) -> Response {
+pub async fn list_apps_handler(State(state): State<RuntimeState>) -> Response {
     let apps = state.manager.list_apps().await;
     Json(apps).into_response()
 }
 
 pub async fn create_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Json(req): Json<CreateAppRequest>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.create_app(req).await {
@@ -23,7 +23,7 @@ pub async fn create_app_handler(
 }
 
 pub async fn get_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.get_app(&id).await {
@@ -33,7 +33,7 @@ pub async fn get_app_handler(
 }
 
 pub async fn start_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.start_app(&id).await {
@@ -43,7 +43,7 @@ pub async fn start_app_handler(
 }
 
 pub async fn stop_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.stop_app(&id).await {
@@ -53,7 +53,7 @@ pub async fn stop_app_handler(
 }
 
 pub async fn restart_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.restart_app(&id).await {
@@ -63,7 +63,7 @@ pub async fn restart_app_handler(
 }
 
 pub async fn delete_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
     match state.manager.delete_app(&id).await {
@@ -73,7 +73,7 @@ pub async fn delete_app_handler(
 }
 
 pub async fn get_app_logs_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Json<Vec<LogLine>>, (StatusCode, String)> {
     match state.manager.get_logs(&id).await {

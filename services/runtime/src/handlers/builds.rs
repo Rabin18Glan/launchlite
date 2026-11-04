@@ -1,19 +1,19 @@
-use crate::routes::AppState;
-use crate::routes::auth::get_session_from_headers;
-use common::models::{BuildJob, DeployRepoRequest};
+use crate::state::RuntimeState;
+use auth::handler::get_session_from_headers;
 use axum::{
     Json,
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Response},
 };
+use common::models::{BuildJob, DeployRepoRequest};
 
 pub async fn deploy_git_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     headers: HeaderMap,
     Json(req): Json<DeployRepoRequest>,
 ) -> Result<Response, (StatusCode, String)> {
-    let token = get_session_from_headers(&state, &headers)
+    let token = get_session_from_headers(&state.auth, &headers)
         .ok()
         .map(|s| s.access_token);
 
@@ -24,11 +24,11 @@ pub async fn deploy_git_handler(
 }
 
 pub async fn redeploy_app_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<Response, (StatusCode, String)> {
-    let token = get_session_from_headers(&state, &headers)
+    let token = get_session_from_headers(&state.auth, &headers)
         .ok()
         .map(|s| s.access_token);
 
@@ -39,10 +39,10 @@ pub async fn redeploy_app_handler(
 }
 
 pub async fn get_builds_handler(
-    State(state): State<AppState>,
+    State(state): State<RuntimeState>,
     Path(id): Path<String>,
 ) -> Result<Json<Vec<BuildJob>>, (StatusCode, String)> {
-    match state.manager.get_db().get_builds_for_app(&id) {
+    match state.manager.get_builds_for_app(&id) {
         Ok(builds) => Ok(Json(builds)),
         Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
     }

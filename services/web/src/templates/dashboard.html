@@ -113,6 +113,7 @@
 
             <!-- Header Actions & Controls -->
             <div class="flex items-center gap-2.5">
+                <button type="button" onclick="logoutAdmin()" class="text-xs text-zinc-500 hover:text-orange-700 dark:hover:text-orange-400 px-2 py-1.5">Sign out</button>
                 <!-- Theme Toggle Button (Light/Dark) -->
                 <button onclick="toggleTheme()" id="themeToggleBtn" title="Toggle color theme" class="p-1.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition">
                     <!-- Sun icon (shown in dark mode) -->
@@ -781,6 +782,14 @@
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
 
     <script>
+        async function logoutAdmin() {
+            try {
+                const response = await fetch('/auth/admin/logout', { method: 'POST' });
+                if (!response.ok) throw new Error('Unable to sign out');
+                location.replace('/login');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
         // Theme initialization and toggle
         function initTheme() {
             const savedTheme = localStorage.getItem('launchlite_theme');

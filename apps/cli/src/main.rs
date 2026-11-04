@@ -120,7 +120,7 @@ async fn run_dev(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let mut config = Config::from_env();
     config.port = port;
 
-    api::run_server(config).await
+    api::init(config).await
 }
 
 async fn run_foreground(port: u16) -> Result<(), Box<dyn std::error::Error>> {
@@ -135,7 +135,7 @@ async fn run_foreground(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let mut config = Config::from_env();
     config.port = port;
 
-    api::run_server(config).await
+    api::init(config).await
 }
 
 fn start_background(port: u16) -> Result<(), Box<dyn std::error::Error>> {

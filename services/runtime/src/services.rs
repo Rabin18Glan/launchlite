@@ -4,9 +4,9 @@ use std::time::Duration;
 use tokio::sync::{RwLock, mpsc, oneshot};
 use tracing::{error, info};
 
-use builder::BuildRunner;
 use crate::health::check_health;
 use crate::process::{ProcessExitReason, spawn_application};
+use builder::BuildRunner;
 use common::metrics::{get_binary_size, get_process_memory, get_self_memory, is_process_alive};
 use common::models::{
     AppConfig, AppInfo, AppStatus, CreateAppRequest, DeployRepoRequest, GitDeploymentConfig,
@@ -29,7 +29,7 @@ pub struct AppRuntime {
 
 pub struct ExecutionManager {
     apps: RwLock<HashMap<String, AppRuntime>>,
-    db: Database,
+    repository: crate::repository::AppRepository,
     builder: BuildRunner,
     platform_started_at: u64,
     restart_tx: mpsc::UnboundedSender<String>,
@@ -41,7 +41,7 @@ impl ExecutionManager {
         let builder = BuildRunner::new(data_dir, db.clone());
         let manager = Arc::new(Self {
             apps: RwLock::new(HashMap::new()),
-            db,
+            repository: crate::repository::AppRepository::new(db),
             builder,
             platform_started_at: current_timestamp(),
             restart_tx,
@@ -49,15 +49,15 @@ impl ExecutionManager {
         (manager, restart_rx)
     }
 
-    pub fn get_db(&self) -> &Database {
-        &self.db
+    pub fn get_builds_for_app(&self, app_id: &str) -> Result<Vec<common::BuildJob>, String> {
+        self.builder.get_builds_for_app(app_id)
     }
 
     pub async fn init(
         self: &Arc<Self>,
         mut restart_rx: mpsc::UnboundedReceiver<String>,
     ) -> Result<(), String> {
-        let saved_apps = self.db.get_all_apps().map_err(|e| e.to_string())?;
+        let saved_apps = self.repository.get_all_apps().map_err(|e| e.to_string())?;
         info!("Loading {} apps from database", saved_apps.len());
 
         for config in saved_apps {
@@ -162,7 +162,7 @@ impl ExecutionManager {
             created_at: current_timestamp(),
         };
 
-        self.db
+        self.repository
             .save_app(&config)
             .map_err(|e| format!("DB error: {}", e))?;
 
@@ -237,7 +237,7 @@ impl ExecutionManager {
             created_at: current_timestamp(),
         };
 
-        self.db
+        self.repository
             .save_app(&app_config)
             .map_err(|e| format!("DB error: {}", e))?;
 
@@ -335,7 +335,7 @@ impl ExecutionManager {
                     g.last_commit_hash = Some(result.commit_hash);
                 }
 
-                let _ = self.db.save_app(&updated_config);
+                let _ = self.repository.save_app(&updated_config);
 
                 let _ = self.stop_app(id).await;
                 tokio::time::sleep(Duration::from_millis(300)).await;
@@ -523,7 +523,7 @@ impl ExecutionManager {
         let _ = self.stop_app(id).await;
         tokio::time::sleep(Duration::from_millis(200)).await;
 
-        self.db
+        self.repository
             .delete_app(id)
             .map_err(|e| format!("DB error: {}", e))?;
         self.apps.write().await.remove(id);
@@ -590,7 +590,10 @@ impl ExecutionManager {
         }
     }
 
-    pub async fn import_data(self: &Arc<Self>, export: PlatformExport) -> Result<ImportSummary, String> {
+    pub async fn import_data(
+        self: &Arc<Self>,
+        export: PlatformExport,
+    ) -> Result<ImportSummary, String> {
         let mut imported = 0;
         let mut updated = 0;
         let mut failed = 0;
@@ -598,7 +601,7 @@ impl ExecutionManager {
 
         for config in export.apps {
             let app_id = config.id.clone();
-            if let Err(e) = self.db.save_app(&config) {
+            if let Err(e) = self.repository.save_app(&config) {
                 errors.push(format!("{}: DB error: {}", app_id, e));
                 failed += 1;
                 continue;

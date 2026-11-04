@@ -1,15 +1,15 @@
-use crate::routes::AppState;
-use auth::{get_authorization_url, handle_callback, handle_direct_token};
-use common::models::{DirectTokenRequest, OAuthCallbackQuery};
+use crate::services::{get_authorization_url, handle_callback, handle_direct_token};
+use crate::{services, state::AuthState};
 use axum::{
     Json,
     extract::{Query, State},
     http::{HeaderMap, StatusCode, header},
     response::{IntoResponse, Redirect, Response},
 };
+use common::models::{DirectTokenRequest, OAuthCallbackQuery};
 
 pub async fn github_login_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
 ) -> Result<Redirect, (StatusCode, String)> {
     match get_authorization_url(&state.config) {
         Ok(url) => Ok(Redirect::temporary(&url)),
@@ -24,7 +24,7 @@ pub async fn github_login_handler(
 }
 
 pub async fn github_callback_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
     Query(params): Query<OAuthCallbackQuery>,
 ) -> Result<Response, (StatusCode, String)> {
     if let Some(err) = params.error {
@@ -38,7 +38,7 @@ pub async fn github_callback_handler(
         .code
         .ok_or_else(|| (StatusCode::BAD_REQUEST, "Missing OAuth code".to_string()))?;
 
-    let session = handle_callback(&state.config, &state.github, state.manager.get_db(), &code)
+    let session = handle_callback(&state.config, &state.github, &state.repository, &code)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
 
@@ -56,10 +56,10 @@ pub async fn github_callback_handler(
 }
 
 pub async fn direct_token_login_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
     Json(payload): Json<DirectTokenRequest>,
 ) -> Result<Response, (StatusCode, String)> {
-    let session = handle_direct_token(&state.github, state.manager.get_db(), &payload.token)
+    let session = handle_direct_token(&state.github, &state.repository, &payload.token)
         .await
         .map_err(|e| (StatusCode::BAD_REQUEST, e))?;
 
@@ -75,7 +75,7 @@ pub async fn direct_token_login_handler(
 }
 
 pub async fn get_current_user_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
     headers: HeaderMap,
 ) -> Result<Response, (StatusCode, String)> {
     let session = get_session_from_headers(&state, &headers)?;
@@ -83,13 +83,11 @@ pub async fn get_current_user_handler(
 }
 
 pub async fn list_github_repos_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
     headers: HeaderMap,
 ) -> Result<Response, (StatusCode, String)> {
     let session = get_session_from_headers(&state, &headers)?;
-    let repos = state
-        .github
-        .get_repos(&session.access_token)
+    let repos = services::list_repositories(&state, &session)
         .await
         .map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
 
@@ -97,14 +95,14 @@ pub async fn list_github_repos_handler(
 }
 
 pub async fn logout_handler(
-    State(state): State<AppState>,
+    State(state): State<AuthState>,
     headers: HeaderMap,
 ) -> Result<Response, (StatusCode, String)> {
     if let Some(cookie_val) = headers.get(header::COOKIE).and_then(|v| v.to_str().ok()) {
         for cookie in cookie_val.split(';') {
             let parts: Vec<&str> = cookie.trim().split('=').collect();
             if parts.len() == 2 && parts[0] == "session_id" {
-                let _ = state.manager.get_db().delete_session(parts[1]);
+                services::logout(&state, parts[1]);
             }
         }
     }
@@ -118,28 +116,22 @@ pub async fn logout_handler(
 }
 
 pub fn get_session_from_headers(
-    state: &AppState,
+    state: &AuthState,
     headers: &HeaderMap,
 ) -> Result<common::models::UserSession, (StatusCode, String)> {
-    // 1. Try reading cookie
-    if let Some(cookie_val) = headers.get(header::COOKIE).and_then(|v| v.to_str().ok()) {
-        for cookie in cookie_val.split(';') {
-            let parts: Vec<&str> = cookie.trim().split('=').collect();
-            if parts.len() == 2 && parts[0] == "session_id" {
-                if let Ok(Some(sess)) = state.manager.get_db().get_session(parts[1]) {
-                    return Ok(sess);
-                }
-            }
-        }
-    }
-
-    // 2. Try latest session fallback for local single-user convenience
-    if let Ok(Some(sess)) = state.manager.get_db().get_latest_session() {
-        return Ok(sess);
-    }
-
-    Err((
-        StatusCode::UNAUTHORIZED,
-        "Please connect with GitHub to view your repositories".to_string(),
-    ))
+    let session_id = headers
+        .get(header::COOKIE)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|value| {
+            value.split(';').find_map(|cookie| {
+                let (key, value) = cookie.trim().split_once('=')?;
+                (key == "session_id").then_some(value)
+            })
+        });
+    services::find_session(state, session_id).ok_or_else(|| {
+        (
+            StatusCode::UNAUTHORIZED,
+            "Please connect with GitHub to view your repositories".to_string(),
+        )
+    })
 }

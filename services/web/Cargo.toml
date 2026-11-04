@@ -9,3 +9,6 @@ common = { workspace = true }
 axum-template = { workspace = true }
 minijinja = { workspace = true }
 serde = { workspace = true }
+axum = { workspace = true }
+auth = { workspace = true }
+runtime = { workspace = true }

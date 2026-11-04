@@ -1,24 +1,26 @@
 use common::models::{BuildJob, BuildStatus};
 use rusqlite::{Connection, Result, params};
 
-pub fn init_builds_table(conn: &Connection) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS builds (
-            id TEXT PRIMARY KEY,
-            app_id TEXT NOT NULL,
-            repo_url TEXT NOT NULL,
-            branch TEXT NOT NULL,
-            commit_hash TEXT,
-            status_json TEXT NOT NULL,
-            started_at INTEGER NOT NULL,
-            completed_at INTEGER
-        )",
-        [],
-    )?;
-    Ok(())
+#[derive(Clone)]
+pub struct BuildRepository {
+    database: db::Database,
 }
 
-pub fn save_build(conn: &Connection, build: &BuildJob) -> Result<()> {
+impl BuildRepository {
+    pub fn new(database: db::Database) -> Self {
+        Self { database }
+    }
+    pub fn save_build(&self, build: &BuildJob) -> db::Result<()> {
+        let conn = self.database.connection()?;
+        Ok(save_build(&conn, build)?)
+    }
+    pub fn get_builds_for_app(&self, app_id: &str) -> db::Result<Vec<BuildJob>> {
+        let conn = self.database.connection()?;
+        Ok(get_builds_for_app(&conn, app_id)?)
+    }
+}
+
+fn save_build(conn: &Connection, build: &BuildJob) -> Result<()> {
     let status_json =
         serde_json::to_string(&build.status).unwrap_or_else(|_| "\"queued\"".to_string());
     conn.execute(
@@ -42,7 +44,7 @@ pub fn save_build(conn: &Connection, build: &BuildJob) -> Result<()> {
     Ok(())
 }
 
-pub fn get_builds_for_app(conn: &Connection, app_id: &str) -> Result<Vec<BuildJob>> {
+fn get_builds_for_app(conn: &Connection, app_id: &str) -> Result<Vec<BuildJob>> {
     let mut stmt = conn.prepare(
         "SELECT id, app_id, repo_url, branch, commit_hash, status_json, started_at, completed_at
          FROM builds WHERE app_id = ?1 ORDER BY started_at DESC LIMIT 20",

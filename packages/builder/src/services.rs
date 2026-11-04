@@ -11,7 +11,7 @@ use db::Database;
 
 pub struct BuildRunner {
     data_dir: String,
-    db: Database,
+    repository: crate::repository::BuildRepository,
 }
 
 pub struct BuildResult {
@@ -25,8 +25,14 @@ impl BuildRunner {
     pub fn new(data_dir: &str, db: Database) -> Self {
         Self {
             data_dir: data_dir.to_string(),
-            db,
+            repository: crate::repository::BuildRepository::new(db),
         }
+    }
+
+    pub fn get_builds_for_app(&self, app_id: &str) -> Result<Vec<BuildJob>, String> {
+        self.repository
+            .get_builds_for_app(app_id)
+            .map_err(|e| e.to_string())
     }
 
     pub fn get_repo_dir(&self, app_id: &str) -> PathBuf {
@@ -54,7 +60,7 @@ impl BuildRunner {
             completed_at: None,
         };
 
-        let _ = self.db.save_build(&job);
+        let _ = self.repository.save_build(&job);
 
         logs.push(
             "build",
@@ -71,14 +77,14 @@ impl BuildRunner {
                     logs.push("build", format!("Successfully fetched commit: {}", hash));
                     job.commit_hash = Some(hash.clone());
                     job.status = BuildStatus::Detecting;
-                    let _ = self.db.save_build(&job);
+                    let _ = self.repository.save_build(&job);
                     hash
                 }
                 Err(e) => {
                     logs.push("build", format!("Git error: {}", e));
                     job.status = BuildStatus::Failed(e.clone());
                     job.completed_at = Some(current_timestamp());
-                    let _ = self.db.save_build(&job);
+                    let _ = self.repository.save_build(&job);
                     return Err(e);
                 }
             };
@@ -100,7 +106,7 @@ impl BuildRunner {
         if let Some(cmd_str) = build_cmd {
             logs.push("build", format!("Running build command: {}", cmd_str));
             job.status = BuildStatus::Building;
-            let _ = self.db.save_build(&job);
+            let _ = self.repository.save_build(&job);
 
             let mut build_proc = Command::new("sh")
                 .arg("-c")
@@ -137,7 +143,7 @@ impl BuildRunner {
                 logs.push("build", err_msg.clone());
                 job.status = BuildStatus::Failed(err_msg.clone());
                 job.completed_at = Some(current_timestamp());
-                let _ = self.db.save_build(&job);
+                let _ = self.repository.save_build(&job);
                 return Err(err_msg);
             }
             logs.push("build", "Build step completed successfully!".to_string());
@@ -145,7 +151,7 @@ impl BuildRunner {
 
         job.status = BuildStatus::Success;
         job.completed_at = Some(current_timestamp());
-        let _ = self.db.save_build(&job);
+        let _ = self.repository.save_build(&job);
 
         // Parse run command into executable + arguments
         let parts: Vec<&str> = run_cmd.split_whitespace().collect();

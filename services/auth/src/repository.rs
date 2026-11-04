@@ -1,20 +1,34 @@
 use common::models::{GithubUser, UserSession};
 use rusqlite::{Connection, Result, params};
 
-pub fn init_sessions_table(conn: &Connection) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS sessions (
-            session_id TEXT PRIMARY KEY,
-            access_token TEXT NOT NULL,
-            user_json TEXT NOT NULL,
-            created_at INTEGER NOT NULL
-        )",
-        [],
-    )?;
-    Ok(())
+#[derive(Clone)]
+pub struct SessionRepository {
+    database: db::Database,
 }
 
-pub fn save_session(conn: &Connection, session: &UserSession) -> Result<()> {
+impl SessionRepository {
+    pub fn new(database: db::Database) -> Self {
+        Self { database }
+    }
+    pub fn save_session(&self, session: &UserSession) -> db::Result<()> {
+        let conn = self.database.connection()?;
+        Ok(save_session(&conn, session)?)
+    }
+    pub fn get_session(&self, session_id: &str) -> db::Result<Option<UserSession>> {
+        let conn = self.database.connection()?;
+        Ok(get_session(&conn, session_id)?)
+    }
+    pub fn get_latest_session(&self) -> db::Result<Option<UserSession>> {
+        let conn = self.database.connection()?;
+        Ok(get_latest_session(&conn)?)
+    }
+    pub fn delete_session(&self, session_id: &str) -> db::Result<bool> {
+        let conn = self.database.connection()?;
+        Ok(delete_session(&conn, session_id)?)
+    }
+}
+
+fn save_session(conn: &Connection, session: &UserSession) -> Result<()> {
     let user_json = serde_json::to_string(&session.user).unwrap_or_else(|_| "{}".to_string());
     conn.execute(
         "INSERT OR REPLACE INTO sessions (session_id, access_token, user_json, created_at)
@@ -29,7 +43,7 @@ pub fn save_session(conn: &Connection, session: &UserSession) -> Result<()> {
     Ok(())
 }
 
-pub fn get_session(conn: &Connection, session_id: &str) -> Result<Option<UserSession>> {
+fn get_session(conn: &Connection, session_id: &str) -> Result<Option<UserSession>> {
     let mut stmt = conn.prepare(
         "SELECT session_id, access_token, user_json, created_at FROM sessions WHERE session_id = ?1",
     )?;
@@ -52,7 +66,7 @@ pub fn get_session(conn: &Connection, session_id: &str) -> Result<Option<UserSes
     }
 }
 
-pub fn get_latest_session(conn: &Connection) -> Result<Option<UserSession>> {
+fn get_latest_session(conn: &Connection) -> Result<Option<UserSession>> {
     let mut stmt = conn.prepare(
         "SELECT session_id, access_token, user_json, created_at FROM sessions ORDER BY created_at DESC LIMIT 1",
     )?;
@@ -75,7 +89,7 @@ pub fn get_latest_session(conn: &Connection) -> Result<Option<UserSession>> {
     }
 }
 
-pub fn delete_session(conn: &Connection, session_id: &str) -> Result<bool> {
+fn delete_session(conn: &Connection, session_id: &str) -> Result<bool> {
     let count = conn.execute(
         "DELETE FROM sessions WHERE session_id = ?1",
         params![session_id],

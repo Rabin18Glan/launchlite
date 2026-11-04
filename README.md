@@ -105,6 +105,16 @@ curl -X POST http://new-vps:3000/api/system/import \
 
 ---
 
+## Administrator login
+
+On first startup, LaunchLite creates `initial-admin-token` inside its data directory (by default `./data`). Open the dashboard to reach `/setup`, read that token on the server, and use it to create your administrator username and password. Passwords must contain at least 12 characters. The token cannot create another administrator after setup is complete.
+
+Later visits use `/login`. Administrator sessions last 12 hours and can be ended with **Sign out** in the dashboard. GitHub connection credentials are separate and do not grant administrator access. Existing installations also require this initial setup; existing projects are retained.
+
+Management pages and APIs require the administrator session cookie. API requests without a valid cookie return `401`; deployed application domains retain their own access controls. `/health` remains public.
+
+When serving the control panel through HTTPS, set `LAUNCHLITE_COOKIE_SECURE=true` before starting LaunchLite. A reverse proxy must preserve the original `Host` header so browser origin checks work. Setup and login attempts are limited to 10 per minute across an instance.
+
 ## Custom Domain Configuration
 
 Each application can have a custom domain (e.g., `api.example.com`, `myapp.domain.com`, `myapp.local`):
